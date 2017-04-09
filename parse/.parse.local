@@ -1,0 +1,10 @@
+{
+  "applications": {
+    "Broadcasts": {
+      "applicationId": "srjcFFAC17whb6WbA15zN5ciTH07AditB5IFABTq"
+    },
+    "_default": {
+      "link": "Broadcasts"
+    }
+  }
+}
