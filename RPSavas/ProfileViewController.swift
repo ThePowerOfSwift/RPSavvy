@@ -24,13 +24,13 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     var saveChanges: Bool = false {
         didSet {
-            self.SaveButton.hidden = !self.saveChanges
+            self.SaveButton.isHidden = !self.saveChanges
             self.SaveButton.useBlueStyle()
             self.SaveButton.setNeedsDisplay()
         }
     }
     
-    private var profileUser: PFUser = PFUser.currentUser()!
+    fileprivate var profileUser: PFUser = PFUser.current()!
     var user: PFUser {
         get {
             return profileUser
@@ -40,19 +40,19 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         }
     }
     
-    func tappedReset(sender: GradientButton) {
+    func tappedReset(_ sender: GradientButton) {
         ResetButton.toggleAnimation({
             self.Wins.text = "Wins: 0"
             self.Loses.text = "Losses: 0"
             self.Streak.text = "Win Streak: 0"
-            PFUser.currentUser()!["Wins"] = 0
-            PFUser.currentUser()!["Losses"] = 0
-            PFUser.currentUser()!["WinStreak"] = 0
-            PFUser.currentUser()!.saveInBackground()
+            PFUser.current()!["Wins"] = 0
+            PFUser.current()!["Losses"] = 0
+            PFUser.current()!["WinStreak"] = 0
+            PFUser.current()!.saveInBackground()
         })
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         self.dismissKeyboard()
         activityIndicatorView.stopAnimation()
         if self.user["picture"] != nil {
@@ -78,24 +78,24 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         if self.user["WinStreak"] != nil {
             self.Streak.text = "Win Streak: \(self.user["WinStreak"] as! Int)"
         }
-        if self.user == PFUser.currentUser()! {
-            ResetButton.hidden = false
+        if self.user == PFUser.current()! {
+            ResetButton.isHidden = false
             ResetButton.setNeedsDisplay()
             nameField.setNeedsLayout()
             //SaveButton.hidden = false
             addLogOut()
             navigationItem.title = "Edit Profile"
-            view.userInteractionEnabled = true
+            view.isUserInteractionEnabled = true
         } else {
-            ResetButton.hidden = true
-            SaveButton.hidden = true
+            ResetButton.isHidden = true
+            SaveButton.isHidden = true
             navigationItem.title = "RPSavvy"
-            view.userInteractionEnabled = false
-            navigationItem.setRightBarButtonItem(UIBarButtonItem(title: "", style: UIBarButtonItemStyle.Plain, target: nil, action: nil), animated: false)
+            view.isUserInteractionEnabled = false
+            navigationItem.setRightBarButton(UIBarButtonItem(title: "", style: UIBarButtonItemStyle.plain, target: nil, action: nil), animated: false)
         }
     }
     
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         saveChanges = true
         return true
@@ -107,7 +107,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         ResetButton.useRedStyle()
         SaveButton.useBlueStyle()
         addGradLayer()
-        ResetButton.addTarget(self, action: #selector(self.tappedReset), forControlEvents: UIControlEvents.TouchUpInside)
+        ResetButton.addTarget(self, action: #selector(self.tappedReset), for: UIControlEvents.touchUpInside)
         userImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(ProfileViewController.photoButtonPressed)))
         view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(ProfileViewController.dismissKeyboard)))
     }
@@ -124,8 +124,8 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     func saveUser() {
         if saveChanges == true {
             saveChanges = false
-            PFUser.currentUser()!["fullname"] = nameField.text!
-            PFUser.currentUser()!.saveInBackgroundWithBlock({
+            PFUser.current()!["fullname"] = nameField.text!
+            PFUser.current()!.saveInBackground(block: {
                 succeeded, error in
                 if error == nil {
                     ProgressHUD.showSuccess("Updated Profile")
@@ -138,7 +138,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         }
     }
     
-    @IBAction func saveButtonPressed(sender: GradientButton) {
+    @IBAction func saveButtonPressed(_ sender: GradientButton) {
         self.dismissKeyboard()
         SaveButton.toggleAnimation({
             self.saveUser()
@@ -147,17 +147,17 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
 
     // MARK: - UIImagePickerControllerDelegate
     
-    func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         var image = info[UIImagePickerControllerEditedImage] as! UIImage
         if image.size.width > 280 {
             image = Images.resizeImage(image, width: 280, height: 280)!
         }
         let pictureFile = PFFile(name: "picture.jpg", data: UIImageJPEGRepresentation(image, 0.6)!)
         pictureFile!.saveInBackground()
-        PFUser.currentUser()!["picture"] = pictureFile
-        picker.dismissViewControllerAnimated(true, completion: nil)
+        PFUser.current()!["picture"] = pictureFile
+        picker.dismiss(animated: true, completion: nil)
         saveChanges = true
-        SaveButton.hidden = false
+        SaveButton.isHidden = false
     }
 
 }

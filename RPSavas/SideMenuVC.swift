@@ -24,8 +24,8 @@ import CoreVideo
 
 
 protocol KSideMenuVCDelegate: class {
-    func sidemenuDidOpen(sidemenu: KSideMenuVC)
-    func sidemenuDidStartOpen(sidemenu: KSideMenuVC)
+    func sidemenuDidOpen(_ sidemenu: KSideMenuVC)
+    func sidemenuDidStartOpen(_ sidemenu: KSideMenuVC)
 }
 
 class KSideMenuVC: UIViewController,UIGestureRecognizerDelegate {
@@ -45,27 +45,27 @@ class KSideMenuVC: UIViewController,UIGestureRecognizerDelegate {
     
     func setUp(){
         self.distanceOpenMenu = self.view.frame.size.width-(self.view.frame.size.width/2)//3);
-        self.view.backgroundColor = UIColor.whiteColor()
+        self.view.backgroundColor = UIColor.white
         self.view.GradLayer()
         self.menuContainer = UIViewController()
         self.menuContainer!.view.layer.anchorPoint = CGPoint(x:1.0, y:0.5)
         self.menuContainer!.view.frame = self.view.bounds;
-        self.menuContainer!.view.backgroundColor = UIColor.clearColor()
+        self.menuContainer!.view.backgroundColor = UIColor.clear
         self.addChildViewController(self.menuContainer!)
         self.view.addSubview((self.menuContainer?.view)!)
-        self.menuContainer?.didMoveToParentViewController(self)
+        self.menuContainer?.didMove(toParentViewController: self)
         self.mainContainer = UIViewController()
         self.mainContainer!.view.frame = self.view.bounds;
-        self.mainContainer!.view.backgroundColor = UIColor.clearColor()
+        self.mainContainer!.view.backgroundColor = UIColor.clear
         self.addChildViewController(self.mainContainer!)
         self.view.addSubview((self.mainContainer?.view)!)
-        self.mainContainer?.didMoveToParentViewController(self)
+        self.mainContainer?.didMove(toParentViewController: self)
         
     }
     
-    func setupMenuViewController(menuVC : UIViewController)->Void{
+    func setupMenuViewController(_ menuVC : UIViewController)->Void{
         if (self.menuViewController != nil) {
-            self.menuViewController?.willMoveToParentViewController(nil)
+            self.menuViewController?.willMove(toParentViewController: nil)
             self.menuViewController?.removeFromParentViewController()
             self.menuViewController?.view.removeFromSuperview()
         }
@@ -73,13 +73,13 @@ class KSideMenuVC: UIViewController,UIGestureRecognizerDelegate {
         self.menuViewController!.view.frame = self.view.bounds;
         self.menuContainer?.addChildViewController(self.menuViewController!)
         self.menuContainer?.view.addSubview(menuVC.view)
-        self.menuContainer?.didMoveToParentViewController(self.menuViewController)
+        self.menuContainer?.didMove(toParentViewController: self.menuViewController)
     }
     
-    func setupMainViewController(mainVC : UIViewController)->Void{
+    func setupMainViewController(_ mainVC : UIViewController)->Void{
         closeMenu()
         if (self.mainViewController != nil) {
-            self.mainViewController?.willMoveToParentViewController(nil)
+            self.mainViewController?.willMove(toParentViewController: nil)
             self.mainViewController?.removeFromParentViewController()
             self.mainViewController?.view.removeFromSuperview()
         }
@@ -87,7 +87,7 @@ class KSideMenuVC: UIViewController,UIGestureRecognizerDelegate {
         self.mainViewController!.view.frame = self.view.bounds;
         self.mainContainer?.addChildViewController(self.mainViewController!)
         self.mainContainer?.view.addSubview(self.mainViewController!.view)
-        self.mainViewController?.didMoveToParentViewController(self.mainContainer)
+        self.mainViewController?.didMove(toParentViewController: self.mainContainer)
         if (self.mainContainer!.view.frame.minX == self.distanceOpenMenu) {
             closeMenu()
         }
@@ -100,12 +100,12 @@ class KSideMenuVC: UIViewController,UIGestureRecognizerDelegate {
         }
         var fMain : CGRect = self.mainContainer!.view.frame
         fMain.origin.x = -self.distanceOpenMenu;
-        UIView.animateWithDuration(0.7, delay: 0.0, options: UIViewAnimationOptions.BeginFromCurrentState, animations: { () -> Void in
+        UIView.animate(withDuration: 0.7, delay: 0.0, options: UIViewAnimationOptions.beginFromCurrentState, animations: { () -> Void in
             let layerTemp : CALayer = (self.mainContainer?.view.layer)!
             layerTemp.zPosition = 1000
             var tRotate : CATransform3D = CATransform3DIdentity
             tRotate.m34 = 1.0/(-500)
-            let aXpos: CGFloat = CGFloat(20.0*(M_PI/180))//CGFloat(-20.0*(M_PI/180))
+            let aXpos: CGFloat = CGFloat(20.0*(Double.pi/180))//CGFloat(-20.0*(Double.pi/180))
             tRotate = CATransform3DRotate(tRotate,aXpos, 0, 1, 0)
             var tScale : CATransform3D = CATransform3DIdentity
             tScale.m34 = 1.0/(-500)
@@ -122,13 +122,13 @@ class KSideMenuVC: UIViewController,UIGestureRecognizerDelegate {
     func closeMenu(){
         var fMain : CGRect = self.mainContainer!.view.frame
         fMain.origin.x = 0
-        UIView.animateWithDuration(0.7, delay: 0.0, options: UIViewAnimationOptions.BeginFromCurrentState, animations: { () -> Void in
-            self.mainContainer?.view.transform = CGAffineTransformMakeScale(1.0, 1.0)
+        UIView.animate(withDuration: 0.7, delay: 0.0, options: UIViewAnimationOptions.beginFromCurrentState, animations: { () -> Void in
+            self.mainContainer?.view.transform = CGAffineTransform(scaleX: 1.0, y: 1.0)
             let layerTemp : CALayer = (self.mainContainer?.view.layer)!
             layerTemp.zPosition = 1000
             var tRotate : CATransform3D = CATransform3DIdentity
             tRotate.m34 = 1.0/(-500)
-            let aXpos: CGFloat = CGFloat(0.0*(M_PI/180))
+            let aXpos: CGFloat = CGFloat(0.0*(Double.pi/180))
             tRotate = CATransform3DRotate(tRotate,aXpos, 0, 1, 0)
             layerTemp.transform = tRotate
             var tScale : CATransform3D = CATransform3DIdentity
@@ -139,7 +139,7 @@ class KSideMenuVC: UIViewController,UIGestureRecognizerDelegate {
             layerTemp.transform = CATransform3DConcat(tScale, tRotate)
             self.mainContainer!.view.frame = CGRect(x:0, y:0, width:appDelegate.window!.frame.size.width, height:appDelegate.window!.frame.size.height)
         }) { (finished: Bool) -> Void in
-            self.mainViewController!.view.userInteractionEnabled = true
+            self.mainViewController!.view.isUserInteractionEnabled = true
             self.removeGesture()
         }
     }
@@ -147,13 +147,13 @@ class KSideMenuVC: UIViewController,UIGestureRecognizerDelegate {
     func quickCloseMenu() {
         var fMain : CGRect = self.mainContainer!.view.frame
         fMain.origin.x = 0
-        UIView.animateWithDuration(0.3, delay: 0.1, options: UIViewAnimationOptions.BeginFromCurrentState, animations: { () -> Void in
-            self.mainContainer?.view.transform = CGAffineTransformMakeScale(1.0, 1.0)
+        UIView.animate(withDuration: 0.3, delay: 0.1, options: UIViewAnimationOptions.beginFromCurrentState, animations: { () -> Void in
+            self.mainContainer?.view.transform = CGAffineTransform(scaleX: 1.0, y: 1.0)
             let layerTemp : CALayer = (self.mainContainer?.view.layer)!
             layerTemp.zPosition = 1000
             var tRotate : CATransform3D = CATransform3DIdentity
             tRotate.m34 = 1.0/(-500)
-            let aXpos: CGFloat = CGFloat(0.0*(M_PI/180))
+            let aXpos: CGFloat = CGFloat(0.0*(Double.pi/180))
             tRotate = CATransform3DRotate(tRotate,aXpos, 0, 1, 0)
             layerTemp.transform = tRotate
             var tScale : CATransform3D = CATransform3DIdentity
@@ -164,13 +164,13 @@ class KSideMenuVC: UIViewController,UIGestureRecognizerDelegate {
             layerTemp.transform = CATransform3DConcat(tScale, tRotate)
             self.mainContainer!.view.frame = CGRect(x:0, y:0, width:appDelegate.window!.frame.size.width, height:appDelegate.window!.frame.size.height)
         }) { (finished: Bool) -> Void in
-            self.mainViewController!.view.userInteractionEnabled = true
+            self.mainViewController!.view.isUserInteractionEnabled = true
             self.removeGesture()
         }
     }
     
     func addTapGestures(){
-        self.mainViewController!.view.userInteractionEnabled = false
+        self.mainViewController!.view.isUserInteractionEnabled = false
         let tapGestureRecognizer : UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(KSideMenuVC.tapMainAction))
         self.mainContainer!.view.addGestureRecognizer(tapGestureRecognizer)
     }
@@ -203,19 +203,19 @@ class KSideMenuVC: UIViewController,UIGestureRecognizerDelegate {
     
 }
 
-public class SideMenuCell: UITableViewCell {
+open class SideMenuCell: UITableViewCell {
     @IBOutlet weak var Field: UILabel!
     
-    func evap(newText: String) {
+    func evap(_ newText: String) {
         let originalFrame = self.frame
-        UIView.animateWithDuration(0.3, delay: 0.0, options: UIViewAnimationOptions.CurveEaseIn, animations: {
+        UIView.animate(withDuration: 0.3, delay: 0.0, options: UIViewAnimationOptions.curveEaseIn, animations: {
             self.frame = self.frame.offsetBy(dx: self.frame.width/2, dy:0)
             self.alpha = 0.0
         }) { (success) in
             self.frame = self.frame.offsetBy(dx: -self.frame.width, dy:0)
             self.Field.text = newText
             sideMenuVC.quickCloseMenu()
-            UIView.animateWithDuration(0.3, delay: 0.0, options: UIViewAnimationOptions.CurveEaseIn, animations: {
+            UIView.animate(withDuration: 0.3, delay: 0.0, options: UIViewAnimationOptions.curveEaseIn, animations: {
                 self.frame = originalFrame
                 self.alpha = 1.0
                 }, completion: {_ in
@@ -225,13 +225,13 @@ public class SideMenuCell: UITableViewCell {
     }
     
     
-    var formatter: NSNumberFormatter = NSNumberFormatter()
+    var formatter: NumberFormatter = NumberFormatter()
     
-    public var badgeLabel: UILabel
+    open var badgeLabel: UILabel
     
-    private var badgeNumber: Int = 0
+    fileprivate var badgeNumber: Int = 0
     
-    public var badgeString: Int {
+    open var badgeString: Int {
         get {
             return self.badgeNumber
         }
@@ -252,14 +252,14 @@ public class SideMenuCell: UITableViewCell {
             if self.badgeNumber > 999 {
                 self.setupBadgeViewWithString("999+")
             } else if self.badgeNumber > 0 {
-                self.setupBadgeViewWithString(self.formatter.stringFromNumber(self.badgeNumber)!)
+                self.setupBadgeViewWithString(self.formatter.string(from: NSNumber(integerLiteral: self.badgeNumber))!)
             } else {
                 self.hide()
             }
         }
     }
     
-    public override func awakeFromNib() {
+    open override func awakeFromNib() {
         badgeLabel = UILabel()
         super.awakeFromNib()
         self.formatter.groupingSeparator = ","
@@ -275,7 +275,7 @@ public class SideMenuCell: UITableViewCell {
         setupBadgeViewWithString("0")
     }
     
-    public func initWithFrame(frame: CGRect, withBadgeString badgeString: String, withBadgeInsets badgeInsets: UIEdgeInsets) -> AnyObject {
+    open func initWithFrame(_ frame: CGRect, withBadgeString badgeString: String, withBadgeInsets badgeInsets: UIEdgeInsets) -> AnyObject {
         badgeLabel = UILabel()
         self.formatter.groupingSeparator = ","
         self.formatter.usesGroupingSeparator = true
@@ -287,17 +287,17 @@ public class SideMenuCell: UITableViewCell {
     // MARK: - Visibility
     
     func show() {
-        self.badgeLabel.hidden = false
+        self.badgeLabel.isHidden = false
         let SpringVelocity: CGFloat = 8.0
         let Damping: CGFloat = 0.2
         let Duration: Double = 0.15
-        UIView.animateWithDuration(Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.CurveLinear, animations: {
+        UIView.animate(withDuration: Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.curveLinear, animations: {
             self.badgeLabel.frame = self.badgeLabel.frame.offsetBy(dx: 0, dy: -1)
             }, completion: { _ in
-                UIView.animateWithDuration(Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.CurveLinear, animations: {
+                UIView.animate(withDuration: Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.curveLinear, animations: {
                     self.badgeLabel.frame = self.badgeLabel.frame.offsetBy(dx: 0, dy: 2)
                     }, completion: { _ in
-                        UIView.animateWithDuration(Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.CurveLinear, animations: {
+                        UIView.animate(withDuration: Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.curveLinear, animations: {
                             self.badgeLabel.frame = self.badgeLabel.frame.offsetBy(dx: 0, dy: -1)
                             }, completion: nil)
                 })
@@ -308,44 +308,44 @@ public class SideMenuCell: UITableViewCell {
         let SpringVelocity: CGFloat = 8.0
         let Damping: CGFloat = 0.2
         let Duration: Double = 0.05
-        UIView.animateWithDuration(Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.CurveLinear, animations: {
+        UIView.animate(withDuration: Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.curveLinear, animations: {
             self.badgeLabel.frame = self.badgeLabel.frame.offsetBy(dx: 0, dy: -1)
             }, completion: { _ in
-                UIView.animateWithDuration(Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.CurveLinear, animations: {
+                UIView.animate(withDuration: Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.curveLinear, animations: {
                     self.badgeLabel.frame = self.badgeLabel.frame.offsetBy(dx: 0, dy: 2)
                     }, completion: { _ in
-                        UIView.animateWithDuration(Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.CurveLinear, animations: {
+                        UIView.animate(withDuration: Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.curveLinear, animations: {
                             self.badgeLabel.frame = self.badgeLabel.frame.offsetBy(dx: 0, dy: -1)
                             }, completion: { _ in
-                                self.badgeLabel.hidden = true
+                                self.badgeLabel.isHidden = true
                         })
                 })
         })
     }
     
-    private func setupBadgeViewWithString(badgeText: String?) {
+    fileprivate func setupBadgeViewWithString(_ badgeText: String?) {
         badgeLabel.clipsToBounds = true
         badgeLabel.text = badgeText
-        badgeLabel.hidden = true
+        badgeLabel.isHidden = true
         badgeLabel.font = UIFont(name: "AmericanTypewriter-Semibold", size: 12)!
-        badgeLabel.textAlignment = .Center
+        badgeLabel.textAlignment = .center
         badgeLabel.sizeToFit()
         let badgeSize = badgeLabel.frame.size
         let height = max(20, Double(badgeSize.height) + 5.0)
         let width = max(height, Double(badgeSize.width) + 10.0)
-        badgeLabel.frame = CGRectMake(CGFloat(-(width / 2.0)), CGFloat(-(height / 4.0)), CGFloat(width), CGFloat(height))
+        badgeLabel.frame = CGRect(x: CGFloat(-(width / 2.0)), y: CGFloat(-(height / 4.0)), width: CGFloat(width), height: CGFloat(height))
         setupBadgeStyle()
         addSubview(badgeLabel)
         badgeLabel.text == "0" ? hide() : show()
     }
     
-    private func setupBadgeStyle() {
-        badgeLabel.textAlignment = .Center
-        badgeLabel.backgroundColor = UIColor.redColor()
-        badgeLabel.textColor = UIColor.whiteColor()
+    fileprivate func setupBadgeStyle() {
+        badgeLabel.textAlignment = .center
+        badgeLabel.backgroundColor = UIColor.red
+        badgeLabel.textColor = UIColor.white
         badgeLabel.layer.cornerRadius = badgeLabel.bounds.size.height / 2
         badgeLabel.layer.borderWidth = 1.0
-        badgeLabel.layer.borderColor = UIColor.whiteColor().CGColor
+        badgeLabel.layer.borderColor = UIColor.white.cgColor
     }
 
 }
@@ -361,7 +361,7 @@ class SideMenuVC: UIViewController,KSideMenuVCDelegate, UITableViewDelegate, UIT
     @IBOutlet weak var SidebarBackground: UIView!
     
     
-    private var GameMenu: Bool = false
+    fileprivate var GameMenu: Bool = false
     var gameControls: Bool {
         get {
             return self.GameMenu
@@ -369,11 +369,11 @@ class SideMenuVC: UIViewController,KSideMenuVCDelegate, UITableViewDelegate, UIT
         set {
             if newValue {
                 items = ["Mute", "Mute Video", "Mute Mic", "Mute Opponent", "Quit"]
-                tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: .Fade)
+                tableView.reloadSections(IndexSet(integer: 0), with: .fade)
                 self.GameMenu = newValue
             } else {
                 items = ["Quick Match", "Friends", "Game Requests", "Friend Requests", "Practice", "Nearby"]
-                tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: .Fade)
+                tableView.reloadSections(IndexSet(integer: 0), with: .fade)
                 self.GameMenu = newValue
             }
         }
@@ -386,7 +386,7 @@ class SideMenuVC: UIViewController,KSideMenuVCDelegate, UITableViewDelegate, UIT
         } else {
             self.NavPush("ProfileViewController", completion: {
                 vc in
-                (vc as! ProfileViewController).user = PFUser.currentUser()!
+                (vc as! ProfileViewController).user = PFUser.current()!
             })
         }
     }
@@ -401,73 +401,73 @@ class SideMenuVC: UIViewController,KSideMenuVCDelegate, UITableViewDelegate, UIT
         NameField.adjustsFontSizeToFitWidth = true
         sideMenuVC.sideMenuDelegate = self
         view.backgroundColor = AppConfiguration.navColor
-        ProfileImage.setPic(PFUser.currentUser()!) {
-            self.NameField.text = PFUser.currentUser()!.Fullname()
+        ProfileImage.setPic(PFUser.current()!) {
+            self.NameField.text = PFUser.current()!.Fullname()
             self.NameField.resizeFont()
         }
         self.ProfileImage.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.tappedProfile)))
         self.closeView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.tappedBackground)))
     }
     
-    func sidemenuDidOpen(sidemenu: KSideMenuVC) {
+    func sidemenuDidOpen(_ sidemenu: KSideMenuVC) {
         if !gameControls {
             //print("FriendAccepted : \(PFUser.currentUser()!["friendAccepted"] as! Int), friendInvite : \(PFUser.currentUser()!["friendInvite"] as! Int), game : \((PFUser.currentUser()!["gameInvite"] as! Int) + (PFUser.currentUser()!["accepted"] as! Int))")
-            if PFUser.currentUser()!["friendAccepted"] != nil {
-                (tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 1, inSection: 0)) as! SideMenuCell).badgeString = PFUser.currentUser()!["friendAccepted"] as! Int
+            if PFUser.current()!["friendAccepted"] != nil {
+                (tableView.cellForRow(at: IndexPath(row: 1, section: 0)) as! SideMenuCell).badgeString = PFUser.current()!["friendAccepted"] as! Int
             } else {
-                (tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 1, inSection: 0)) as! SideMenuCell).badgeString = 0
-                PFUser.currentUser()!["friendAccepted"] = 0
-                PFUser.currentUser()!.saveInBackground()
+                (tableView.cellForRow(at: IndexPath(row: 1, section: 0)) as! SideMenuCell).badgeString = 0
+                PFUser.current()!["friendAccepted"] = 0
+                PFUser.current()!.saveInBackground()
             }
-            if PFUser.currentUser()!["friendInvite"] != nil {
-                (tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 3, inSection: 0)) as! SideMenuCell).badgeString = PFUser.currentUser()!["friendInvite"] as! Int
+            if PFUser.current()!["friendInvite"] != nil {
+                (tableView.cellForRow(at: IndexPath(row: 3, section: 0)) as! SideMenuCell).badgeString = PFUser.current()!["friendInvite"] as! Int
             } else {
-                (tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 3, inSection: 0)) as! SideMenuCell).badgeString = 0
-                PFUser.currentUser()!["friendInvite"] = 0
-                PFUser.currentUser()!.saveInBackground()
+                (tableView.cellForRow(at: IndexPath(row: 3, section: 0)) as! SideMenuCell).badgeString = 0
+                PFUser.current()!["friendInvite"] = 0
+                PFUser.current()!.saveInBackground()
             }
-            if PFUser.currentUser()!["gameInvite"] != nil && PFUser.currentUser()!["accepted"] != nil {
-                (tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 2, inSection: 0)) as! SideMenuCell).badgeString = (PFUser.currentUser()!["gameInvite"] as! Int) + (PFUser.currentUser()!["accepted"] as! Int)
+            if PFUser.current()!["gameInvite"] != nil && PFUser.current()!["accepted"] != nil {
+                (tableView.cellForRow(at: IndexPath(row: 2, section: 0)) as! SideMenuCell).badgeString = (PFUser.current()!["gameInvite"] as! Int) + (PFUser.current()!["accepted"] as! Int)
             } else {
-                (tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 2, inSection: 0)) as! SideMenuCell).badgeString = 0
-                PFUser.currentUser()!["accepted"] = 0
-                PFUser.currentUser()!["gameInvite"] = 0
-                PFUser.currentUser()!.saveInBackground()
+                (tableView.cellForRow(at: IndexPath(row: 2, section: 0)) as! SideMenuCell).badgeString = 0
+                PFUser.current()!["accepted"] = 0
+                PFUser.current()!["gameInvite"] = 0
+                PFUser.current()!.saveInBackground()
             }
         }
     }
     
-    func sidemenuDidStartOpen(sidemenu: KSideMenuVC) {
+    func sidemenuDidStartOpen(_ sidemenu: KSideMenuVC) {
         if gameControls {
-            (tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 1, inSection: 0)) as! SideMenuCell).badgeString = 0
-            (tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 3, inSection: 0)) as! SideMenuCell).badgeString = 0
-            (tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 2, inSection: 0)) as! SideMenuCell).badgeString = 0
+            (tableView.cellForRow(at: IndexPath(row: 1, section: 0)) as! SideMenuCell).badgeString = 0
+            (tableView.cellForRow(at: IndexPath(row: 3, section: 0)) as! SideMenuCell).badgeString = 0
+            (tableView.cellForRow(at: IndexPath(row: 2, section: 0)) as! SideMenuCell).badgeString = 0
         }
     }
     
-    func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return items.count
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let sideCell:SideMenuCell = tableView.dequeueReusableCellWithIdentifier("kCell")! as! SideMenuCell
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let sideCell:SideMenuCell = tableView.dequeueReusableCell(withIdentifier: "kCell")! as! SideMenuCell
         sideCell.Field.text = items[indexPath.row]
-        if UIScreen.mainScreen().bounds.size.height >= 736 {
+        if UIScreen.main.bounds.size.height >= 736 {
             sideCell.Field.font = UIFont(name: "AmericanTypewriter-Bold", size: 21)!
-        } else if UIScreen.mainScreen().bounds.size.height < 736 && UIScreen.mainScreen().bounds.size.height >= 667 {
+        } else if UIScreen.main.bounds.size.height < 736 && UIScreen.main.bounds.size.height >= 667 {
             sideCell.Field.font = UIFont(name: "AmericanTypewriter-Bold", size: 18)!
         } else {
             sideCell.Field.font = UIFont(name: "AmericanTypewriter-Bold", size: 16)!
         }
-        sideCell.backgroundColor = .clearColor()
+        sideCell.backgroundColor = .clear
         return sideCell
     }
     
-    func handleGameSelection(indexPath: NSIndexPath, gameview: GameView) {
+    func handleGameSelection(_ indexPath: IndexPath, gameview: GameView) {
         if indexPath.row == 0 {
             gameview.Muted = !gameview.Muted
         } else if indexPath.row == 1 {
@@ -482,7 +482,7 @@ class SideMenuVC: UIViewController,KSideMenuVCDelegate, UITableViewDelegate, UIT
         }
     }
     
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if sideMenuNavigationController!.topViewController is FriendGame {
             let friendGame = sideMenuNavigationController!.topViewController as! FriendGame
             if friendGame.gameview != nil {
@@ -502,16 +502,16 @@ class SideMenuVC: UIViewController,KSideMenuVCDelegate, UITableViewDelegate, UIT
                     vc in
                     (vc as! FriendsTable).forceFetchData()
                 }
-                PFUser.currentUser()!["friendAccepted"] = 0
-                PFUser.currentUser()!.saveInBackground()
+                PFUser.current()!["friendAccepted"] = 0
+                PFUser.current()!.saveInBackground()
             } else if indexPath.row == 2 {
                 self.NavPush("RequestTable",completion: nil)
-                PFUser.currentUser()!["gameInvite"] = 0
-                PFUser.currentUser()!.saveInBackground()
+                PFUser.current()!["gameInvite"] = 0
+                PFUser.current()!.saveInBackground()
             } else if indexPath.row == 3 {
                 self.NavPush("InviteTable",completion: nil)
-                PFUser.currentUser()!["friendInvite"] = 0
-                PFUser.currentUser()!.saveInBackground()
+                PFUser.current()!["friendInvite"] = 0
+                PFUser.current()!.saveInBackground()
             } else if indexPath.row == 4 {
                 self.NavPush("Practice",completion: nil)
             } else if indexPath.row == 5 {
@@ -525,33 +525,33 @@ class SideMenuVC: UIViewController,KSideMenuVCDelegate, UITableViewDelegate, UIT
 }
 
 var sideMenuVC: KSideMenuVC = KSideMenuVC()
-let sideMenuObj: SideMenuVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier("sideMenuID") as! SideMenuVC
+let sideMenuObj: SideMenuVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "sideMenuID") as! SideMenuVC
 
 class kConstant {
     
     func appDelegateSetup() {
-        if PFUser.currentUser() != nil {
+        if PFUser.current() != nil {
             appDelegate.window?.rootViewController = kConstantObj.SetIntialMainViewController("Lobby")
         } else {
-            sideMenuNavigationController = UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier("LobbyNAV") as? UINavigationController
+            sideMenuNavigationController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "LobbyNAV") as? UINavigationController
             appDelegate.window?.rootViewController = sideMenuNavigationController
             appDelegate.window?.makeKeyAndVisible()
         }
     }
     
-    func SetIntialMainViewController(aStoryBoardID: String)->(KSideMenuVC){
-        sideMenuNavigationController = UINavigationController(rootViewController: UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier(aStoryBoardID))
+    func SetIntialMainViewController(_ aStoryBoardID: String)->(KSideMenuVC){
+        sideMenuNavigationController = UINavigationController(rootViewController: UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: aStoryBoardID))
         sideMenuNavigationController!.navigationBar.barTintColor = AppConfiguration.startingColor
-        sideMenuVC.view.frame = UIScreen.mainScreen().bounds
+        sideMenuVC.view.frame = UIScreen.main.bounds
         sideMenuVC.setupMainViewController(sideMenuNavigationController!)
         sideMenuVC.setupMenuViewController(sideMenuObj)
         return sideMenuVC
     }
     
-    func SetMainViewController(aStoryBoardID: String)->(KSideMenuVC){
-        sideMenuNavigationController = UINavigationController(rootViewController: UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier(aStoryBoardID))
+    func SetMainViewController(_ aStoryBoardID: String)->(KSideMenuVC){
+        sideMenuNavigationController = UINavigationController(rootViewController: UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: aStoryBoardID))
         sideMenuNavigationController!.navigationBar.barTintColor = AppConfiguration.startingColor
-        sideMenuVC.view.frame = UIScreen.mainScreen().bounds
+        sideMenuVC.view.frame = UIScreen.main.bounds
         sideMenuVC.setupMainViewController(sideMenuNavigationController!)
         return sideMenuVC
     }

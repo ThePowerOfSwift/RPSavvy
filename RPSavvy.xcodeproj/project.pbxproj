@@ -432,14 +432,14 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3DCC37641C6E7C1D009718E7 /* Build configuration list for PBXNativeTarget "RPSavvy" */;
 			buildPhases = (
-				84EBFFBD964888B1F7C12486 /* [CP] Check Pods Manifest.lock */,
+				E26096DD06B872CF7202AF32 /* [CP] Check Pods Manifest.lock */,
 				3DCC374E1C6E7C1D009718E7 /* Sources */,
 				3DCC374F1C6E7C1D009718E7 /* Frameworks */,
 				3DCC37501C6E7C1D009718E7 /* Resources */,
 				3D485C041C6E882B00322A72 /* ShellScript */,
 				3D03B38C1C9EFEF200777AB4 /* Headers */,
-				E68A96DEE6704F65F9E19D4D /* [CP] Embed Pods Frameworks */,
-				71DFFD3E61C343B83C260908 /* [CP] Copy Pods Resources */,
+				0AA6C29139105865FF204EB6 /* [CP] Embed Pods Frameworks */,
+				843FB64024A209F66AAFC3F7 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -464,7 +464,7 @@
 					3DCC37511C6E7C1D009718E7 = {
 						CreatedOnToolsVersion = 7.2;
 						DevelopmentTeam = HT47WPUGHM;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 0830;
 						ProvisioningStyle = Manual;
 						SystemCapabilities = {
 							com.apple.Push = {
@@ -514,6 +514,21 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		0AA6C29139105865FF204EB6 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-RPSavvy/Pods-RPSavvy-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		3D485C041C6E882B00322A72 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 8;
@@ -527,7 +542,7 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Fabric/run\" 7c157a5430a04bb3469073c315ec7aac852f7130 4aa39fba96996622e309a941603175bd1a7b61079de267cf2750a2d73ac070ae";
 		};
-		71DFFD3E61C343B83C260908 /* [CP] Copy Pods Resources */ = {
+		843FB64024A209F66AAFC3F7 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -542,7 +557,7 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-RPSavvy/Pods-RPSavvy-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		84EBFFBD964888B1F7C12486 /* [CP] Check Pods Manifest.lock */ = {
+		E26096DD06B872CF7202AF32 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -555,21 +570,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
-			showEnvVarsInLog = 0;
-		};
-		E68A96DEE6704F65F9E19D4D /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-RPSavvy/Pods-RPSavvy-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -756,18 +756,7 @@
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = HT47WPUGHM;
 				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/build/Debug-iphoneos/Bolts",
-					"$(PROJECT_DIR)/build/Debug-iphoneos/Parse",
-					"$(PROJECT_DIR)/build/Debug-iphoneos/ParseFacebookUtilsV4",
-					"$(PROJECT_DIR)/build/Debug-iphoneos/ParseTwitterUtils",
-					"$(PROJECT_DIR)/build/Debug-iphoneos/ParseUI",
-					"$(PROJECT_DIR)/build/Debug-iphoneos/BubbleTransition",
-					"$(PROJECT_DIR)/RPSavas",
-					"$(PROJECT_DIR)/build/Debug-iphoneos",
-					"$(PROJECT_DIR)/build/Release-iphoneos",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"${PODS_ROOT}/Headers/Public\"",
@@ -866,7 +855,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "RPSavas/RPSavas-Bridging-Header.h";
 				SWIFT_OBJC_INTERFACE_HEADER_NAME = "$(SWIFT_MODULE_NAME)-Swift.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 2.3;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -883,18 +872,7 @@
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = HT47WPUGHM;
 				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/build/Debug-iphoneos/Bolts",
-					"$(PROJECT_DIR)/build/Debug-iphoneos/Parse",
-					"$(PROJECT_DIR)/build/Debug-iphoneos/ParseFacebookUtilsV4",
-					"$(PROJECT_DIR)/build/Debug-iphoneos/ParseTwitterUtils",
-					"$(PROJECT_DIR)/build/Debug-iphoneos/ParseUI",
-					"$(PROJECT_DIR)/build/Debug-iphoneos/BubbleTransition",
-					"$(PROJECT_DIR)/RPSavas",
-					"$(PROJECT_DIR)/build/Debug-iphoneos",
-					"$(PROJECT_DIR)/build/Release-iphoneos",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"${PODS_ROOT}/Headers/Public\"",
@@ -993,7 +971,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "RPSavas/RPSavas-Bridging-Header.h";
 				SWIFT_OBJC_INTERFACE_HEADER_NAME = "$(SWIFT_MODULE_NAME)-Swift.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 2.3;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};

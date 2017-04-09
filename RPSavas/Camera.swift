@@ -11,32 +11,32 @@ import MobileCoreServices
 
 class Camera {
     
-    class func shouldStartCamera(target: AnyObject, canEdit: Bool, frontFacing: Bool) -> Bool {
-        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera) == false {
+    class func shouldStartCamera(_ target: AnyObject, canEdit: Bool, frontFacing: Bool) -> Bool {
+        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.camera) == false {
             return false
         }
         
         let type = kUTTypeImage as String
         let cameraUI = UIImagePickerController()
         
-        let available = UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera) && (UIImagePickerController.availableMediaTypesForSourceType(UIImagePickerControllerSourceType.Camera) as [String]!).contains(type)
+        let available = UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.camera) && (UIImagePickerController.availableMediaTypes(for: UIImagePickerControllerSourceType.camera) as [String]!).contains(type)
         
         if available {
             cameraUI.mediaTypes = [type]
-            cameraUI.sourceType = UIImagePickerControllerSourceType.Camera
+            cameraUI.sourceType = UIImagePickerControllerSourceType.camera
             
             /* Prioritize front or rear camera */
             if (frontFacing == true) {
-                if UIImagePickerController.isCameraDeviceAvailable(UIImagePickerControllerCameraDevice.Front) {
-                    cameraUI.cameraDevice = UIImagePickerControllerCameraDevice.Front
-                } else if UIImagePickerController.isCameraDeviceAvailable(UIImagePickerControllerCameraDevice.Rear) {
-                    cameraUI.cameraDevice = UIImagePickerControllerCameraDevice.Rear
+                if UIImagePickerController.isCameraDeviceAvailable(UIImagePickerControllerCameraDevice.front) {
+                    cameraUI.cameraDevice = UIImagePickerControllerCameraDevice.front
+                } else if UIImagePickerController.isCameraDeviceAvailable(UIImagePickerControllerCameraDevice.rear) {
+                    cameraUI.cameraDevice = UIImagePickerControllerCameraDevice.rear
                 }
             } else {
-                if UIImagePickerController.isCameraDeviceAvailable(UIImagePickerControllerCameraDevice.Rear) {
-                    cameraUI.cameraDevice = UIImagePickerControllerCameraDevice.Rear
-                } else if UIImagePickerController.isCameraDeviceAvailable(UIImagePickerControllerCameraDevice.Front) {
-                    cameraUI.cameraDevice = UIImagePickerControllerCameraDevice.Front
+                if UIImagePickerController.isCameraDeviceAvailable(UIImagePickerControllerCameraDevice.rear) {
+                    cameraUI.cameraDevice = UIImagePickerControllerCameraDevice.rear
+                } else if UIImagePickerController.isCameraDeviceAvailable(UIImagePickerControllerCameraDevice.front) {
+                    cameraUI.cameraDevice = UIImagePickerControllerCameraDevice.front
                 }
             }
         } else {
@@ -51,26 +51,26 @@ class Camera {
         if target is ProfileViewController {
             cameraUI.delegate = target as! ProfileViewController
         }
-        target.presentViewController(cameraUI, animated: true, completion: nil)
+        target.present(cameraUI, animated: true, completion: nil)
         
         return true
     }
 
-    class func shouldStartPhotoLibrary(target: AnyObject, canEdit: Bool) -> Bool {
-        if !UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.PhotoLibrary) && !UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.SavedPhotosAlbum) {
+    class func shouldStartPhotoLibrary(_ target: AnyObject, canEdit: Bool) -> Bool {
+        if !UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.photoLibrary) && !UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.savedPhotosAlbum) {
             return false
         }
         
         let type = kUTTypeImage as String
         let imagePicker = UIImagePickerController()
         
-        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.PhotoLibrary) && (UIImagePickerController.availableMediaTypesForSourceType(UIImagePickerControllerSourceType.PhotoLibrary) as [String]!).contains(type) {
+        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.photoLibrary) && (UIImagePickerController.availableMediaTypes(for: UIImagePickerControllerSourceType.photoLibrary) as [String]!).contains(type) {
             imagePicker.mediaTypes = [type]
-            imagePicker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
+            imagePicker.sourceType = UIImagePickerControllerSourceType.photoLibrary
         }
-        else if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.SavedPhotosAlbum) && (UIImagePickerController.availableMediaTypesForSourceType(UIImagePickerControllerSourceType.SavedPhotosAlbum) as [String]!).contains(type) {
+        else if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.savedPhotosAlbum) && (UIImagePickerController.availableMediaTypes(for: UIImagePickerControllerSourceType.savedPhotosAlbum) as [String]!).contains(type) {
             imagePicker.mediaTypes = [type]
-            imagePicker.sourceType = UIImagePickerControllerSourceType.SavedPhotosAlbum
+            imagePicker.sourceType = UIImagePickerControllerSourceType.savedPhotosAlbum
         }
         else {
             return false
@@ -83,26 +83,26 @@ class Camera {
         if target is ProfileViewController {
             imagePicker.delegate = target as! ProfileViewController
         }
-        target.presentViewController(imagePicker, animated: true, completion: nil)
+        target.present(imagePicker, animated: true, completion: nil)
         
         return true
     }
     
-    class func shouldStartVideoLibrary(target: AnyObject, canEdit: Bool) -> Bool {
-        if !UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.PhotoLibrary) && !UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.SavedPhotosAlbum) {
+    class func shouldStartVideoLibrary(_ target: AnyObject, canEdit: Bool) -> Bool {
+        if !UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.photoLibrary) && !UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.savedPhotosAlbum) {
             return false
         }
         
         let type = kUTTypeMovie as String
         let imagePicker = UIImagePickerController()
         
-        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.PhotoLibrary) && (UIImagePickerController.availableMediaTypesForSourceType(UIImagePickerControllerSourceType.PhotoLibrary) as [String]!).contains(type) {
+        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.photoLibrary) && (UIImagePickerController.availableMediaTypes(for: UIImagePickerControllerSourceType.photoLibrary) as [String]!).contains(type) {
             imagePicker.mediaTypes = [type]
-            imagePicker.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
+            imagePicker.sourceType = UIImagePickerControllerSourceType.photoLibrary
         }
-        else if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.SavedPhotosAlbum) && (UIImagePickerController.availableMediaTypesForSourceType(UIImagePickerControllerSourceType.SavedPhotosAlbum) as [String]!).contains(type) {
+        else if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.savedPhotosAlbum) && (UIImagePickerController.availableMediaTypes(for: UIImagePickerControllerSourceType.savedPhotosAlbum) as [String]!).contains(type) {
             imagePicker.mediaTypes = [type]
-            imagePicker.sourceType = UIImagePickerControllerSourceType.SavedPhotosAlbum
+            imagePicker.sourceType = UIImagePickerControllerSourceType.savedPhotosAlbum
         }
         else {
             return false
@@ -113,7 +113,7 @@ class Camera {
         /*if target is MessagesViewController {
             imagePicker.delegate = target as! MessagesViewController
         }*/
-        target.presentViewController(imagePicker, animated: true, completion: nil)
+        target.present(imagePicker, animated: true, completion: nil)
         
         return true
     }

@@ -16,13 +16,13 @@ import ParseFacebookUtilsV4
 import ParseTwitterUtils
 
 
-let defaults = NSUserDefaults.standardUserDefaults()
+let defaults = UserDefaults.standard
 
 class Login: UIViewController, UITextFieldDelegate, BEMCheckBoxDelegate {
     
     
-    private var idx: Int = 0
-    private let backGroundArray = [UIImage(named:"rock"),UIImage(named:"paper"),UIImage(named:"scissors")]
+    fileprivate var idx: Int = 0
+    fileprivate let backGroundArray = [UIImage(named:"rock"),UIImage(named:"paper"),UIImage(named:"scissors")]
     
     //MARK: Outlets for UI Elements.
     @IBOutlet weak var emailField: ImageTextField!
@@ -41,29 +41,29 @@ class Login: UIViewController, UITextFieldDelegate, BEMCheckBoxDelegate {
     
     @IBOutlet weak var LogoConstraint: NSLayoutConstraint!
     
-    func didTapCheckBox(checkBox:BEMCheckBox) {
+    func didTap(_ checkBox:BEMCheckBox) {
     }
     
-    func animationDidStopForCheckBox(checkBox:BEMCheckBox) {
+    func animationDidStop(for checkBox:BEMCheckBox) {
         
     }
     
     func loginsignupEmailSaveCheck() {
         if customCheckbox.on == true {
-            defaults.setValue(PFUser.currentUser()!.email!, forKey: "userEmail")
+            defaults.setValue(PFUser.current()!.email!, forKey: "userEmail")
         } else {
-            defaults.removeObjectForKey("userEmail")
+            defaults.removeObject(forKey: "userEmail")
         }
     }
     
-    @IBAction func twitLog(sender: UIButton) {
-        PFTwitterUtils.logInWithBlock {
-            (user: PFUser?, error: NSError?) -> Void in
+    @IBAction func twitLog(_ sender: UIButton) {
+        PFTwitterUtils.logIn {
+            (user: PFUser?, error: Error?) -> Void in
             if let user = user {
                 if user.isNew {
-                    if !PFFacebookUtils.isLinkedWithUser(user) {
-                        PFFacebookUtils.linkUserInBackground(user, withReadPermissions: nil, block: {
-                            (succeeded: Bool?, error: NSError?) -> Void in
+                    if !PFFacebookUtils.isLinked(with: user) {
+                        PFFacebookUtils.linkUser(inBackground: user, withReadPermissions: nil, block: {
+                            (succeeded: Bool?, error: Error?) -> Void in
                             if error != nil {
                                 ProgressHUD.showError(error?.localizedDescription)
                             } else {
@@ -71,11 +71,11 @@ class Login: UIViewController, UITextFieldDelegate, BEMCheckBoxDelegate {
                             }
                         })
                     }
-                    self.dismissViewControllerAnimated(true, completion: nil)
+                    self.dismiss(animated: true, completion: nil)
                 } else {
-                    if !PFFacebookUtils.isLinkedWithUser(user) {
-                        PFFacebookUtils.linkUserInBackground(user, withReadPermissions: nil, block: {
-                            (succeeded: Bool?, error: NSError?) -> Void in
+                    if !PFFacebookUtils.isLinked(with: user) {
+                        PFFacebookUtils.linkUser(inBackground: user, withReadPermissions: nil, block: {
+                            (succeeded: Bool?, error: Error?) -> Void in
                             if error != nil {
                                 ProgressHUD.showError(error?.localizedDescription)
                             } else {
@@ -83,7 +83,7 @@ class Login: UIViewController, UITextFieldDelegate, BEMCheckBoxDelegate {
                             }
                         })
                     }
-                    self.dismissViewControllerAnimated(true, completion: nil)
+                    self.dismiss(animated: true, completion: nil)
                 }
             } else {
                 ProgressHUD.showError("Twitter Login Failed")
@@ -94,9 +94,9 @@ class Login: UIViewController, UITextFieldDelegate, BEMCheckBoxDelegate {
     func fabo() {
         let requestParameters = ["fields": "id, email, first_name, last_name"]
         let userDetails = FBSDKGraphRequest(graphPath: "me", parameters: requestParameters)
-        userDetails.startWithCompletionHandler { (connection, result, error:NSError!) -> Void in
+        userDetails?.start { (connection, result, error:Error!) -> Void in
             if(error != nil) {
-                PFUser.currentUser()!.deleteInBackground()
+                PFUser.current()!.deleteInBackground()
                 PFUser.logOut()
                 
                 ProgressHUD.showError(error?.localizedDescription)
@@ -104,7 +104,7 @@ class Login: UIViewController, UITextFieldDelegate, BEMCheckBoxDelegate {
             }
             if(result != nil) {
                 let myresult = (result as? NSDictionary)!
-                let user : PFUser = PFUser.currentUser()!
+                let user : PFUser = PFUser.current()!
                 let userId: String = (myresult["id"] as? String)!
                 let userFirstName: String = (myresult["first_name"] as? String)!
                 let userLastName: String = (myresult["last_name"] as? String)!
@@ -118,10 +118,10 @@ class Login: UIViewController, UITextFieldDelegate, BEMCheckBoxDelegate {
                     user["fullname"] = fullName
                 }
                 
-                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+                DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.default).async {
                     let userProfile = "https://graph.facebook.com/" + userId + "/picture?type=large"
-                    let profilePictureUrl = NSURL(string: userProfile)
-                    let profilePictureData = NSData(contentsOfURL: profilePictureUrl!)
+                    let profilePictureUrl = URL(string: userProfile)
+                    let profilePictureData = try? Data(contentsOf: profilePictureUrl!)
                     if(profilePictureData != nil) {
                         var image = UIImage(data: profilePictureData!)
                         if image!.size.width > 280 {
@@ -134,37 +134,37 @@ class Login: UIViewController, UITextFieldDelegate, BEMCheckBoxDelegate {
                     }
                 }
                 let friendRequest = FBSDKGraphRequest(graphPath:"/me/friends", parameters: nil)
-                friendRequest.startWithCompletionHandler { (connection : FBSDKGraphRequestConnection!, result : AnyObject!, error : NSError!) -> Void in
+                friendRequest?.start { (connection : FBSDKGraphRequestConnection!, result : Any!, error : Error!) -> Void in
                     guard let resultdict = result as? NSDictionary else {
                         return
                     }
-                    let data : NSArray = resultdict.objectForKey("data") as! NSArray
+                    let data : NSArray = resultdict.object(forKey: "data") as! NSArray
                     for i in 0 ..< data.count {
                         let valueDict : NSDictionary = data[i] as! NSDictionary
-                        let id = valueDict.objectForKey("id") as! String
+                        let id = valueDict.object(forKey: "id") as! String
                         let Querier = PFUser.query()
                         Querier!.whereKey("FacebookID", equalTo: id)
-                        Querier!.getFirstObjectInBackgroundWithBlock( { (object, error) in
+                        Querier!.getFirstObjectInBackground( block: { (object, error) in
                             if error == nil  {
-                                if PFUser.currentUser()!["Friends"] != nil {
-                                    var friends: [String] = PFUser.currentUser()!["Friends"] as! [String]
+                                if PFUser.current()!["Friends"] != nil {
+                                    var friends: [String] = PFUser.current()!["Friends"] as! [String]
                                     if !friends.contains(object!.objectId!) {
                                         friends.append(object!.objectId!)
-                                        PFUser.currentUser()!["Friends"] = friends
-                                        PFUser.currentUser()!.saveInBackground()
+                                        PFUser.current()!["Friends"] = friends
+                                        PFUser.current()!.saveInBackground()
                                     }
                                 } else {
-                                    PFUser.currentUser()!["Friends"] = [object!.objectId!]
-                                    PFUser.currentUser()!.saveInBackground()
+                                    PFUser.current()!["Friends"] = [object!.objectId!]
+                                    PFUser.current()!.saveInBackground()
                                 }
                             }
                         })
                     }
                 }
-                user.saveInBackgroundWithBlock({
+                user.saveInBackground(block: {
                     succeeded, error in
                     if error != nil {
-                        PFUser.currentUser()!.deleteInBackground()
+                        PFUser.current()!.deleteInBackground()
                         PFUser.logOut()
                         ProgressHUD.showError(error?.localizedDescription)
                     } else {
@@ -176,9 +176,9 @@ class Login: UIViewController, UITextFieldDelegate, BEMCheckBoxDelegate {
         }
     }
     
-    @IBAction func FacebookTapped(sender: UIButton) {
-        PFFacebookUtils.logInInBackgroundWithReadPermissions(["public_profile", "email"]) {
-            (user: PFUser?, error: NSError?) -> Void in
+    @IBAction func FacebookTapped(_ sender: UIButton) {
+        PFFacebookUtils.logInInBackground(withReadPermissions: ["public_profile", "email"]) {
+            (user: PFUser?, error: Error?) -> Void in
             if error == nil {
                 if let user = user {
                     if user.isNew {
@@ -197,7 +197,7 @@ class Login: UIViewController, UITextFieldDelegate, BEMCheckBoxDelegate {
     }
     
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         /*dispatch_async(dispatch_get_main_queue()) {
             self.emailField.alpha = 0
             self.passwordField.alpha = 0
@@ -213,18 +213,18 @@ class Login: UIViewController, UITextFieldDelegate, BEMCheckBoxDelegate {
                 }, completion: nil)
         }*/
         addKeyboard()
-        guard let userEmail: String = defaults.valueForKey("userEmail") as? String else {
+        guard let userEmail: String = defaults.value(forKey: "userEmail") as? String else {
             return
         }
         emailField.text = userEmail
         customCheckbox.setOn(true, animated: true)
     }
     
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         removeKeyboard()
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         facebookLogin.logOut()
         PFUser.logOut()
     }
@@ -237,68 +237,68 @@ class Login: UIViewController, UITextFieldDelegate, BEMCheckBoxDelegate {
 
     func setup() {
         //self.view.layoutIfNeeded()
-        UIView.animateWithDuration(1, animations: {
-            self.LogoConstraint.constant = (UIScreen.mainScreen().bounds.width <= 320) ? 100 : 220
-            self.heightConstraint.constant = (UIScreen.mainScreen().bounds.width <= 320) ? 40 : 50
+        UIView.animate(withDuration: 1, animations: {
+            self.LogoConstraint.constant = (UIScreen.main.bounds.width <= 320) ? 100 : 220
+            self.heightConstraint.constant = (UIScreen.main.bounds.width <= 320) ? 40 : 50
             //self.view.layoutIfNeeded()
         })
         LoginButton.useLoginStyle()
         signupButton.useLoginStyle()
-        LoginButton.enabled = false
-        signupButton.enabled = false
-        let forgotButton = UIButton(type: .System)
-        forgotButton.setTitle("Forgot Password?", forState: .Normal)
+        LoginButton.isEnabled = false
+        signupButton.isEnabled = false
+        let forgotButton = UIButton(type: .system)
+        forgotButton.setTitle("Forgot Password?", for: UIControlState())
         forgotButton.titleLabel?.font = UIFont(name: "AmericanTypewriter", size: 15)!
-        forgotButton.addTarget(self, action: #selector(Login.forgot(_:)), forControlEvents: .TouchUpInside)
-        forgotButton.setTitleColor(.whiteColor(), forState: .Normal)
+        forgotButton.addTarget(self, action: #selector(Login.forgot(_:)), for: .touchUpInside)
+        forgotButton.setTitleColor(.white, for: UIControlState())
         self.TextFieldsStack.addArrangedSubview(forgotButton)
         addDismissGesture()
         addGradLayer()
         addBackButton()
         imageView.image = UIImage(named:"rock")
-        NSTimer.scheduledTimerWithTimeInterval(2, target: self, selector: #selector(Login.changeImage), userInfo: nil, repeats: true)
+        Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(Login.changeImage), userInfo: nil, repeats: true)
     }
     
-    func forgot(sender: UIButton) {
-        let alerter = UIAlertController(title: "Enter Email", message: nil, preferredStyle: .Alert)
-        let cancelAction: UIAlertAction = UIAlertAction(title: "Cancel", style: .Cancel) { action -> Void in}
+    func forgot(_ sender: UIButton) {
+        let alerter = UIAlertController(title: "Enter Email", message: nil, preferredStyle: .alert)
+        let cancelAction: UIAlertAction = UIAlertAction(title: "Cancel", style: .cancel) { action -> Void in}
         alerter.addAction(cancelAction)
-        let nextAction: UIAlertAction = UIAlertAction(title: "Ok", style: .Default) { action -> Void in
+        let nextAction: UIAlertAction = UIAlertAction(title: "Ok", style: .default) { action -> Void in
             let text: String = (alerter.textFields?.first?.text)!
-            PFUser.requestPasswordResetForEmailInBackground(text)
-            let alerter2 = UIAlertController(title: "Request Sent", message: nil, preferredStyle: .Alert)
-            let cancelAction2: UIAlertAction = UIAlertAction(title: "Ok", style: .Cancel) { action -> Void in}
+            PFUser.requestPasswordResetForEmail(inBackground: text)
+            let alerter2 = UIAlertController(title: "Request Sent", message: nil, preferredStyle: .alert)
+            let cancelAction2: UIAlertAction = UIAlertAction(title: "Ok", style: .cancel) { action -> Void in}
             alerter2.addAction(cancelAction2)
-            self.presentViewController(alerter2, animated: true, completion: nil)
+            self.present(alerter2, animated: true, completion: nil)
         }
         alerter.addAction(nextAction)
-        alerter.addTextFieldWithConfigurationHandler { (textField) -> Void in}
-        presentViewController(alerter, animated: true, completion: nil)
+        alerter.addTextField { (textField) -> Void in}
+        present(alerter, animated: true, completion: nil)
     }
     
     func logsignButton() {
         if emailField.text!.isEmpty || passwordField.text!.isEmpty {
-            UIView.animateWithDuration(0.3, delay: 0, options: UIViewAnimationOptions.TransitionCrossDissolve, animations: {
+            UIView.animate(withDuration: 0.3, delay: 0, options: UIViewAnimationOptions.transitionCrossDissolve, animations: {
                 self.LoginButton.normalGradients = [UIColor(red: 0.667, green: 0.15, blue: 0.152, alpha: 1.0),UIColor(red: 0.841, green: 0.566, blue: 0.566, alpha: 1.0),UIColor(red: 0.75, green: 0.341, blue: 0.345, alpha: 1.0),UIColor(red: 0.592, green: 0.0, blue: 0.0, alpha: 1.0),UIColor(red: 0.592, green: 0.0, blue: 0.0, alpha: 1.0)]
                 self.signupButton.normalGradients = [UIColor(red: 0.667, green: 0.15, blue: 0.152, alpha: 1.0),UIColor(red: 0.841, green: 0.566, blue: 0.566, alpha: 1.0),UIColor(red: 0.75, green: 0.341, blue: 0.345, alpha: 1.0),UIColor(red: 0.592, green: 0.0, blue: 0.0, alpha: 1.0),UIColor(red: 0.592, green: 0.0, blue: 0.0, alpha: 1.0)]
                 }, completion: nil)
-            LoginButton.enabled = false
-            signupButton.enabled = false
+            LoginButton.isEnabled = false
+            signupButton.isEnabled = false
         } else {
-            UIView.animateWithDuration(0.3, delay: 0, options: UIViewAnimationOptions.TransitionCrossDissolve, animations: {
+            UIView.animate(withDuration: 0.3, delay: 0, options: UIViewAnimationOptions.transitionCrossDissolve, animations: {
                 self.LoginButton.normalGradients = [UIColor(red: 0.15, green: 0.667, blue: 0.152, alpha: 1.0),UIColor(red: 0.566, green: 0.841, blue: 0.566, alpha: 1.0),UIColor(red: 0.341, green: 0.75, blue: 0.345, alpha: 1.0),UIColor(red: 0.0, green: 0.592, blue: 0.0, alpha: 1.0),UIColor(red: 0.0, green: 0.592, blue: 0.0, alpha: 1.0)]
                 self.signupButton.normalGradients = [UIColor(red: 0.15, green: 0.667, blue: 0.152, alpha: 1.0),UIColor(red: 0.566, green: 0.841, blue: 0.566, alpha: 1.0),UIColor(red: 0.341, green: 0.75, blue: 0.345, alpha: 1.0),UIColor(red: 0.0, green: 0.592, blue: 0.0, alpha: 1.0),UIColor(red: 0.0, green: 0.592, blue: 0.0, alpha: 1.0)]
                 }, completion: nil)
-            LoginButton.enabled = true
-            signupButton.enabled = true
+            LoginButton.isEnabled = true
+            signupButton.isEnabled = true
         }
     }
     
-    func textFieldDidEndEditing(textField: UITextField) {
+    func textFieldDidEndEditing(_ textField: UITextField) {
         self.logsignButton()
     }
     
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if textField == emailField {
             if passwordField.text == "" {
                 passwordField.becomeFirstResponder()
@@ -313,17 +313,17 @@ class Login: UIViewController, UITextFieldDelegate, BEMCheckBoxDelegate {
     
     func changeImage(){
         idx = idx == backGroundArray.count-1 ? 0 : idx + 1
-        UIView.transitionWithView(self.imageView, duration: 1, options: .TransitionCrossDissolve, animations: {self.imageView.image = self.backGroundArray[self.idx]}, completion: nil)
+        UIView.transition(with: self.imageView, duration: 1, options: .transitionCrossDissolve, animations: {self.imageView.image = self.backGroundArray[self.idx]}, completion: nil)
     }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
     
-    @IBAction func LoginPressed(sender: GradientButton) {
+    @IBAction func LoginPressed(_ sender: GradientButton) {
         activityIndicatorView.startAnimation()
-        PFUser.logInWithUsernameInBackground(self.emailField.text!, password:self.passwordField.text!) {
-            (user: PFUser?, error: NSError?) -> Void in
+        PFUser.logInWithUsername(inBackground: self.emailField.text!, password:self.passwordField.text!) {
+            (user: PFUser?, error: Error?) -> Void in
             if user != nil {
                 activityIndicatorView.stopAnimation()
                 kConstantObj.appDelegateSetup()
@@ -335,16 +335,16 @@ class Login: UIViewController, UITextFieldDelegate, BEMCheckBoxDelegate {
         }
     }
     
-    @IBAction func SignupPressed(sender: GradientButton) {
+    @IBAction func SignupPressed(_ sender: GradientButton) {
         activityIndicatorView.startAnimation()
         let user = PFUser()
         user.username = self.emailField.text!
         user.password = self.passwordField.text!
         user.email = self.emailField.text!
-        user.signUpInBackgroundWithBlock {
-            (succeeded: Bool, error: NSError?) -> Void in
+        user.signUpInBackground {
+            (succeeded: Bool, error: Error?) -> Void in
             if let error = error {
-                let errorString: String = (error.userInfo["error"] as? String)!
+                let errorString: String = ((error as! NSError).userInfo["error"] as? String)!
                 activityIndicatorView.stopAnimation()
                 ProgressHUD.showError(errorString)
             } else {
@@ -353,7 +353,7 @@ class Login: UIViewController, UITextFieldDelegate, BEMCheckBoxDelegate {
                 self.loginsignupEmailSaveCheck()
                 self.NavPush("ProfileViewController", completion: {
                     vc in
-                    (vc as! ProfileViewController).user = PFUser.currentUser()!
+                    (vc as! ProfileViewController).user = PFUser.current()!
                 })
             }
         }

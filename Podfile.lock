@@ -5,17 +5,17 @@ PODS:
   - Bolts/AppLinks (1.8.4):
     - Bolts/Tasks
   - Bolts/Tasks (1.8.4)
-  - Crashlytics (3.8.4):
+  - Crashlytics (3.8.2):
     - Fabric (~> 1.6.3)
-  - Fabric (1.6.11)
-  - FBSDKCoreKit (4.21.0):
+  - Fabric (1.6.8)
+  - FBSDKCoreKit (4.15.1):
     - Bolts (~> 1.7)
-  - FBSDKLoginKit (4.21.0):
+  - FBSDKLoginKit (4.15.1):
     - FBSDKCoreKit
-  - FBSDKShareKit (4.21.0):
+  - FBSDKShareKit (4.15.1):
     - FBSDKCoreKit
   - JSQSystemSoundPlayer (4.4.0)
-  - OpenTok (2.10.2)
+  - OpenTok (2.9.0)
   - Parse (1.14.4):
     - Bolts/Tasks (~> 1.8)
   - ParseFacebookUtilsV4 (1.11.1):
@@ -31,44 +31,44 @@ PODS:
     - Bolts/Tasks (~> 1.3)
     - Parse (~> 1.9)
   - PeekPop (0.1.5)
-  - TwitterCore (2.8.0):
+  - TwitterCore (2.4.0):
     - Fabric
-  - TwitterKit (2.8.1):
-    - TwitterCore (>= 2.8)
+  - TwitterKit (2.4.0):
+    - TwitterCore (= 2.4.0)
 
 DEPENDENCIES:
-  - Crashlytics
-  - Fabric
-  - FBSDKCoreKit
-  - FBSDKLoginKit
-  - FBSDKShareKit
-  - JSQSystemSoundPlayer
-  - OpenTok
-  - Parse
-  - ParseFacebookUtilsV4
-  - ParseTwitterUtils
-  - ParseUI
+  - Crashlytics (= 3.8.2)
+  - Fabric (= 1.6.8)
+  - FBSDKCoreKit (= 4.15.1)
+  - FBSDKLoginKit (= 4.15.1)
+  - FBSDKShareKit (= 4.15.1)
+  - JSQSystemSoundPlayer (= 4.4.0)
+  - OpenTok (= 2.9.0)
+  - Parse (= 1.14.4)
+  - ParseFacebookUtilsV4 (= 1.11.1)
+  - ParseTwitterUtils (= 1.11.0)
+  - ParseUI (= 1.2.0)
   - PeekPop (~> 0.1)
-  - TwitterCore
-  - TwitterKit
+  - TwitterCore (= 2.4.0)
+  - TwitterKit (= 2.4.0)
 
 SPEC CHECKSUMS:
   Bolts: 8a7995239dbe724f9cba2248b766d48b7ebdd322
-  Crashlytics: 79e236942ca1e7fc641df1feb9a275360a78ab6a
-  Fabric: 5911403591946b8228ab1c51d98f1d7137e863c6
-  FBSDKCoreKit: 8a372ab194b5c7c26355c1920ef52dbeb44bc222
-  FBSDKLoginKit: a1a5f4b4ac445823a020fbeeaf5f03714a67ff9c
-  FBSDKShareKit: 649a7acfd01a3e056a33994c1bfbb997814cc8a2
+  Crashlytics: 27acca95a01b042a8294291dd6dff27f8f6af6d7
+  Fabric: 5755268d0171435ab167e3d0878a28a777deaf10
+  FBSDKCoreKit: fc7fa53d16b095ee3fd53f0cd59f1df8bcbb634d
+  FBSDKLoginKit: 073f79b3b2e762fc6f54a283fe15f45372d59f5f
+  FBSDKShareKit: 11cbb5a4d7b5fda8143cc95b76188147e6725736
   JSQSystemSoundPlayer: 126ccc4a08db8fc3036bd07d33b0f8eda1559476
-  OpenTok: 9f0909068d6ed69acffa77a4610b47924926f79e
+  OpenTok: 0d5b1180dd7d7d971c9b9a25fd33c84f09f27e11
   Parse: b0aa91d2c435e53d4a9af26e741e014c9b35c42e
   ParseFacebookUtilsV4: 2f30c2b7021c8005d3042781da7ef87d06589421
   ParseTwitterUtils: 0dde9689565e7012d83f892c64aed2ebe69f2ea9
   ParseUI: af2eba584799da4a9fbdac0e178662d7438b502e
   PeekPop: 9a6b77f3af1d634878ef143790782ef5a78aa34a
-  TwitterCore: e959987be23c767004d29eb7fab8d85d8585a2e5
-  TwitterKit: 3b6044a7320340326a4098f3e37aa1dbaeb94942
+  TwitterCore: a139904c80805ad3dde9eef1100704f96f646d1d
+  TwitterKit: 1cf9742edf9d182c1518cfdd6aaac0dfe313b38b
 
-PODFILE CHECKSUM: 5cccc9844bec27e9ad7072db85b8f1b291d1395b
+PODFILE CHECKSUM: 3380fa2199cb5ddb3e10317f4c021c8158660e6e
 
 COCOAPODS: 1.2.1.rc.1

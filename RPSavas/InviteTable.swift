@@ -23,11 +23,11 @@ class  InviteTable: ParseTable, MGSwipeTableCellDelegate {
             let query = PFQuery(className: "Notification")
             query.limit = 20
             query.skip = pageNumber*20
-            query.whereKey("User", equalTo: PFUser.currentUser()!)
+            query.whereKey("User", equalTo: PFUser.current()!)
             query.whereKey("Type", equalTo: "friendInvite")
             query.cachePolicy = AppConfiguration.cachePolicy
             query.maxCacheAge = 3600
-            query.findObjectsInBackgroundWithBlock({
+            query.findObjectsInBackground(block: {
                 objects, error in
                 if error == nil {
                     if self.pageNumber == 0 {
@@ -39,7 +39,7 @@ class  InviteTable: ParseTable, MGSwipeTableCellDelegate {
                             array.append(follow)
                         }
                     }
-                    self.invitesList.appendContentsOf(array)
+                    self.invitesList.append(contentsOf: array)
                     self.tableView.reloadData()
                     activityIndicatorView.stopAnimation()
                     self.requestInProgress = false
@@ -59,31 +59,31 @@ class  InviteTable: ParseTable, MGSwipeTableCellDelegate {
         }
     }
     
-    override func viewDidDisappear(animated: Bool) {
+    override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         self.invitesList.removeAll()
     }
     
-    override func customViewForEmptyDataSet(scrollView: UIScrollView!) -> UIView! {
+    override func customView(forEmptyDataSet scrollView: UIScrollView!) -> UIView! {
         let viewBounds = scrollView.bounds
         let image: UIImageView = UIImageView(image: UIImage(named: "RPSLogo"))
-        image.frame = UIScreen.mainScreen().bounds.width > 320 ? CGRect(x: self.view.bounds.midX - ((viewBounds.width * 0.8) / 2), y: viewBounds.height / 5 , width: viewBounds.width * 0.8 , height: viewBounds.width * 0.8) : CGRect(x: self.view.bounds.midX - ((viewBounds.width / 2.5) / 2), y: viewBounds.height / 4.5 , width: viewBounds.width / 2.5, height: viewBounds.width / 2.5)
-        image.contentMode = .ScaleAspectFit
+        image.frame = UIScreen.main.bounds.width > 320 ? CGRect(x: self.view.bounds.midX - ((viewBounds.width * 0.8) / 2), y: viewBounds.height / 5 , width: viewBounds.width * 0.8 , height: viewBounds.width * 0.8) : CGRect(x: self.view.bounds.midX - ((viewBounds.width / 2.5) / 2), y: viewBounds.height / 4.5 , width: viewBounds.width / 2.5, height: viewBounds.width / 2.5)
+        image.contentMode = .scaleAspectFit
         let label = UILabel(frame: CGRect(x: 20, y: image.frame.maxY + 5, width: viewBounds.width - 40, height: 50))
         label.text = "No Friend Requests"
-        label.font = UIFont.boldSystemFontOfSize(18.0)
-        label.textColor = .whiteColor()
-        label.textAlignment = .Center
+        label.font = UIFont.boldSystemFont(ofSize: 18.0)
+        label.textColor = .white
+        label.textAlignment = .center
         let label2 = UILabel(frame: CGRect(x: 20, y: label.frame.maxY + 5, width: viewBounds.width - 40, height: 80))
         label2.text = "Send a Friend Request to a Friend or use Facebook to find your Friends"
-        label2.font = UIFont.boldSystemFontOfSize(14.0)
-        label2.lineBreakMode = NSLineBreakMode.ByWordWrapping
-        label2.textAlignment = .Center
+        label2.font = UIFont.boldSystemFont(ofSize: 14.0)
+        label2.lineBreakMode = NSLineBreakMode.byWordWrapping
+        label2.textAlignment = .center
         label2.numberOfLines = 2
-        label2.textColor = .lightGrayColor()
+        label2.textColor = .lightGray
         let QuickMatch = GradientButton(frame: CGRect(x: 20, y: label2 .frame.maxY + 15, width: viewBounds.width - 40, height: 40))
-        QuickMatch.addTarget(self, action: #selector(InviteTable.findFriendsPressed(_:)), forControlEvents: .TouchUpInside)
-        QuickMatch.setTitle("Find Friends", forState: UIControlState.Normal)
+        QuickMatch.addTarget(self, action: #selector(InviteTable.findFriendsPressed(_:)), for: .touchUpInside)
+        QuickMatch.setTitle("Find Friends", for: UIControlState())
         QuickMatch.useBlackStyle()
         QuickMatch.layer.cornerRadius = 8.0
         QuickMatch.layer.masksToBounds = true
@@ -97,49 +97,49 @@ class  InviteTable: ParseTable, MGSwipeTableCellDelegate {
         return bottomView
     }
     
-    func findFriendsPressed(sender: UIBarButtonItem) {
+    func findFriendsPressed(_ sender: UIBarButtonItem) {
         self.NavPush("FriendsTable", completion: nil)
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         let localNotification:UILocalNotification = UILocalNotification()
         localNotification.alertAction = "Testing inline reply notificaions on iOS9"
         localNotification.alertBody = "Woww it works!!"
         localNotification.alertLaunchImage = "star"
-        localNotification.fireDate = NSDate(timeIntervalSinceNow: 5)
+        localNotification.fireDate = Date(timeIntervalSinceNow: 5)
         localNotification.category = "CHAT_CATEGORY"
-        UIApplication.sharedApplication().scheduleLocalNotification(localNotification)
+        UIApplication.shared.scheduleLocalNotification(localNotification)
         
-        PFUser.currentUser()!["friendInvite"] = 0
-        PFUser.currentUser()!.saveInBackground()
+        PFUser.current()!["friendInvite"] = 0
+        PFUser.current()!.saveInBackground()
         self.forceFetchData()
     }
     
     override func viewDidLoad() {
         self.navigationItem.title = "Friend Requests"
     }
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return invitesList.count
     }
     
-    override func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         (cell as! SwipeCell).setUpUserInvite(self)
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("SwipeCell", forIndexPath: indexPath) as? SwipeCell
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "SwipeCell", for: indexPath) as? SwipeCell
         cell!.index = indexPath
         cell!.table = self
         cell!.UserInvite = self.invitesList[indexPath.row]//["SentFrom"] as? PFUser
         return cell!
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        let cell:SwipeCell = (tableView.cellForRowAtIndexPath(indexPath) as? SwipeCell)!
-        if cell.swipeState == MGSwipeState.SwipingRightToLeft {
-            cell.hideSwipeAnimated(true)
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let cell:SwipeCell = (tableView.cellForRow(at: indexPath) as? SwipeCell)!
+        if cell.swipeState == MGSwipeState.swipingRightToLeft {
+            cell.hideSwipe(animated: true)
         } else {
-            cell.showSwipe(MGSwipeDirection.RightToLeft, animated: true, completion: nil)
+            cell.showSwipe(MGSwipeDirection.rightToLeft, animated: true, completion: nil)
         }
     }
 }

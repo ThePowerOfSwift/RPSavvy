@@ -23,17 +23,17 @@ class Lobby: UIViewController {
     
     @IBOutlet weak var signInButton: GradientButton!
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         activityIndicatorView.stopAnimation()
     }
     
     override func viewDidLoad() {
         navigationItem.title = "RPSavvy"
-        AppConfiguration.scheme = AppConfiguration.startingColor.colorScheme(Color.ColorScheme.Monochromatic)
-        AppConfiguration.schemeSame = AppConfiguration.startingColor.colorScheme(Color.ColorScheme.Analagous)
+        AppConfiguration.scheme = AppConfiguration.startingColor.colorScheme(Color.ColorScheme.monochromatic)
+        AppConfiguration.schemeSame = AppConfiguration.startingColor.colorScheme(Color.ColorScheme.analagous)
         AppConfiguration.complement = AppConfiguration.startingColor.complementaryColor()
         view.GradLayer()
-        if PFUser.currentUser() != nil {
+        if PFUser.current() != nil {
             addHamMenu()
             addSwipers()
             view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.tappedMenu)))
@@ -42,8 +42,8 @@ class Lobby: UIViewController {
             let currentType: UIUserNotificationType = currentSettings.types
             print("Type: \(currentType)")*/
             
-            let application = UIApplication.sharedApplication()
-            if !application.isRegisteredForRemoteNotifications() {
+            let application = UIApplication.shared
+            if !application.isRegisteredForRemoteNotifications {
                 
                 /*let replyAction = UIMutableUserNotificationAction()
                 replyAction.title = "Reply"
@@ -64,18 +64,18 @@ class Lobby: UIViewController {
                 notificationCategory.identifier = "CHAT_CATEGORY"
                 notificationCategory .setActions([replyAction,dismissAction], forContext: UIUserNotificationActionContext.Default)
                 */
-                let settings = UIUserNotificationSettings(forTypes: [.Alert, .Sound, .Badge], categories: nil)//[notificationCategory])
+                let settings = UIUserNotificationSettings(types: [.alert, .sound, .badge], categories: nil)//[notificationCategory])
                 application.registerForRemoteNotifications()
                 application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
                 application.registerUserNotificationSettings(settings)
             }
-            self.signInButton.hidden = true
+            self.signInButton.isHidden = true
         } else {
-            self.signInButton.hidden = false
+            self.signInButton.isHidden = false
         }
     }
     
-    @IBAction func TappedLoginSignup(sender: GradientButton) {
+    @IBAction func TappedLoginSignup(_ sender: GradientButton) {
         sender.toggleAnimation() {
             self.NavPush("Login", completion: nil)
         }

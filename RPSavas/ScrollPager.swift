@@ -32,51 +32,51 @@ import Foundation
 import ObjectiveC
 
 @objc public protocol ScrollPagerDelegate: NSObjectProtocol {
-    @objc optional func scrollPager(scrollPager: ScrollPager, changedIndex: Int)
+    @objc optional func scrollPager(_ scrollPager: ScrollPager, changedIndex: Int)
 }
 
-@IBDesignable public class ScrollPager: UIView, UIScrollViewDelegate{
+@IBDesignable open class ScrollPager: UIView, UIScrollViewDelegate{
     
-    private var selectedIndex = 0
-    private let indicatorView = UIView()
-    private var buttons = [UIButton]()
-    private var views = [UIView]()
-    private var animationInProgress = false
-    @IBOutlet public weak var delegate: ScrollPagerDelegate!
+    fileprivate var selectedIndex = 0
+    fileprivate let indicatorView = UIView()
+    fileprivate var buttons = [UIButton]()
+    fileprivate var views = [UIView]()
+    fileprivate var animationInProgress = false
+    @IBOutlet open weak var delegate: ScrollPagerDelegate!
     
-    @IBOutlet public var scrollView: UIScrollView? {
+    @IBOutlet open var scrollView: UIScrollView? {
         didSet {
             scrollView?.delegate = self
-            scrollView?.pagingEnabled = true
+            scrollView?.isPagingEnabled = true
             scrollView?.showsHorizontalScrollIndicator = false
         }
     }
     
-    @IBInspectable public var textColor: UIColor = UIColor.wheatColor() {
+    @IBInspectable open var textColor: UIColor = UIColor.wheatColor() {
         didSet { redrawComponents() }
     }
     
-    @IBInspectable public var selectedTextColor: UIColor = UIColor.wheatColor().darkenedColor(0.1) {
+    @IBInspectable open var selectedTextColor: UIColor = UIColor.wheatColor().darkenedColor(0.1) {
         didSet { redrawComponents() }
     }
     
-    @IBInspectable public var font: UIFont = UIFont(name: "AmericanTypewriter", size: 24)! {
+    @IBInspectable open var font: UIFont = UIFont(name: "AmericanTypewriter", size: 24)! {
         didSet { redrawComponents() }
     }
     
-    @IBInspectable public var selectedFont: UIFont = UIFont(name: "AmericanTypewriter-Bold", size: 25)! {
+    @IBInspectable open var selectedFont: UIFont = UIFont(name: "AmericanTypewriter-Bold", size: 25)! {
         didSet { redrawComponents() }
     }
     
-    @IBInspectable public var indicatorColor: UIColor = UIColor.wheatColor().darkenedColor(0.1) {
+    @IBInspectable open var indicatorColor: UIColor = UIColor.wheatColor().darkenedColor(0.1) {
         didSet { indicatorView.backgroundColor = indicatorColor }
     }
     
-    @IBInspectable public var indicatorSizeMatchesTitle: Bool = false {
+    @IBInspectable open var indicatorSizeMatchesTitle: Bool = false {
         didSet { redrawComponents() }
     }
     
-    @IBInspectable public var indicatorHeight: CGFloat = 3.5 {
+    @IBInspectable open var indicatorHeight: CGFloat = 3.5 {
         didSet { redrawComponents() }
     }
     
@@ -88,7 +88,7 @@ import ObjectiveC
         didSet { self.layer.borderWidth = borderWidth }
     }*/
     
-    @IBInspectable public var animationDuration: CGFloat = 0.2
+    @IBInspectable open var animationDuration: CGFloat = 0.2
     
     // MARK: - Initializarion -
     
@@ -102,13 +102,13 @@ import ObjectiveC
         initialize()
     }
     
-    private func initialize() {
+    fileprivate func initialize() {
         addSegmentsWithTitles(["Following","Followers"])
     }
     
     // MARK: - UIView Methods -
     
-    public override func layoutSubviews() {
+    open override func layoutSubviews() {
         super.layoutSubviews()
         redrawComponents()
         //moveToIndex(selectedIndex, animated: false, moveScrollView: true)
@@ -116,7 +116,7 @@ import ObjectiveC
     
     // MARK: - Public Methods -
     
-    public func addSegmentsWithTitlesAndViews(segments: [(title: String, view: UIView)]) {
+    open func addSegmentsWithTitlesAndViews(_ segments: [(title: String, view: UIView)]) {
         
         addButtons(segments.map { $0.title as AnyObject })
         addViews(segments.map { $0.view })
@@ -124,34 +124,34 @@ import ObjectiveC
         redrawComponents()
     }
     
-    public func addSegmentsWithImagesAndViews(segments: [(image: UIImage, view: UIView)]) {
+    open func addSegmentsWithImagesAndViews(_ segments: [(image: UIImage, view: UIView)]) {
         addButtons(segments.map { $0.image })
         addViews(segments.map { $0.view })
         redrawComponents()
     }
     
-    public func addSegmentsWithTitles(segmentTitles: [String]) {
+    open func addSegmentsWithTitles(_ segmentTitles: [String]) {
         addButtons(segmentTitles as [AnyObject])
         redrawComponents()
     }
     
-    public func addSegmentsWithImages(segmentImages: [UIImage]) {
+    open func addSegmentsWithImages(_ segmentImages: [UIImage]) {
         addButtons(segmentImages)
         redrawComponents()
     }
     
-    public func setSelectedIndex(index: Int, animated: Bool) {
+    open func setSelectedIndex(_ index: Int, animated: Bool) {
         setSelectedIndex(index, animated: animated, moveScrollView: true)
     }
     
     // MARK: - Private -
     
-    private func setSelectedIndex(index: Int, animated: Bool, moveScrollView: Bool) {
+    fileprivate func setSelectedIndex(_ index: Int, animated: Bool, moveScrollView: Bool) {
         selectedIndex = index
         moveToIndex(index, animated: animated, moveScrollView: moveScrollView)
     }
     
-    private func addViews(segmentViews: [UIView]) {
+    fileprivate func addViews(_ segmentViews: [UIView]) {
         guard let scrollView = scrollView else { fatalError("trying to add views but the scrollView is nil") }
         for view in scrollView.subviews {
             view.removeFromSuperview()
@@ -163,30 +163,30 @@ import ObjectiveC
         }
     }
     
-    private func addButtons(titleOrImages: [AnyObject]) {
+    fileprivate func addButtons(_ titleOrImages: [AnyObject]) {
         for button in buttons {
             button.removeFromSuperview()
         }
         buttons.removeAll()
         for i in 0..<titleOrImages.count {
-            let button = UIButton(type: .Custom)
+            let button = UIButton(type: .custom)
             button.tag = i
-            button.addTarget(self, action: #selector(ScrollPager.buttonSelected(_:)), forControlEvents: .TouchUpInside)
+            button.addTarget(self, action: #selector(ScrollPager.buttonSelected(_:)), for: .touchUpInside)
             buttons.append(button)
             if let title = titleOrImages[i] as? String {
-                button.setTitle(title, forState: .Normal)
+                button.setTitle(title, for: UIControlState())
             } else if let image = titleOrImages[i] as? UIImage {
-                button.setImage(image, forState: .Normal)
+                button.setImage(image, for: UIControlState())
             }
             addSubview(button)
             addSubview(indicatorView)
         }
     }
     
-    private func moveToIndex(index: Int, animated: Bool, moveScrollView: Bool) {
+    fileprivate func moveToIndex(_ index: Int, animated: Bool, moveScrollView: Bool) {
         animationInProgress = true
         
-        UIView.animateWithDuration(animated ? NSTimeInterval(animationDuration) : 0.0, delay: 0.0, options: .CurveEaseOut, animations: { [weak self] in
+        UIView.animate(withDuration: animated ? TimeInterval(animationDuration) : 0.0, delay: 0.0, options: .curveEaseOut, animations: { [weak self] in
             
             guard let strongSelf = self else { return }
             let width = strongSelf.frame.size.width / CGFloat(strongSelf.buttons.count)
@@ -198,7 +198,7 @@ import ObjectiveC
                 guard let string = button.titleLabel?.text else { fatalError("missing title on button, title is required for width calculation") }
                 guard let font = button.titleLabel?.font else { fatalError("missing dont on button, title is required for width calculation")  }
                 let myString: NSString = string as NSString
-                let size: CGSize = myString.sizeWithAttributes([NSFontAttributeName: font])
+                let size: CGSize = myString.size(attributes: [NSFontAttributeName: font])
                 let x = width * CGFloat(index) + ((width - size.width) / CGFloat(2))
                 strongSelf.indicatorView.frame = CGRect(x: x, y: strongSelf.frame.size.height - strongSelf.indicatorHeight, width: size.width, height: strongSelf.indicatorHeight)
             } else {
@@ -217,7 +217,7 @@ import ObjectiveC
             })
     }
     
-    private func redrawComponents() {
+    fileprivate func redrawComponents() {
         redrawButtons()
         
         if buttons.count > 0 {
@@ -233,7 +233,7 @@ import ObjectiveC
         }
     }
     
-    private func redrawButtons() {
+    fileprivate func redrawButtons() {
         if buttons.count == 0 {
             return
         }
@@ -244,12 +244,12 @@ import ObjectiveC
         for i in 0..<buttons.count {
             let button = buttons[i]
             button.frame = CGRect(x: width * CGFloat(i), y: 0, width: width, height: height)
-            button.setTitleColor((i == selectedIndex) ? selectedTextColor : textColor, forState: .Normal)
+            button.setTitleColor((i == selectedIndex) ? selectedTextColor : textColor, for: UIControlState())
             button.titleLabel?.font = (i == selectedIndex) ? selectedFont : font
         }
     }
     
-    internal func buttonSelected(sender: UIButton) {
+    internal func buttonSelected(_ sender: UIButton) {
         if sender.tag == selectedIndex {
             return
         }
@@ -261,7 +261,7 @@ import ObjectiveC
     
     // MARK: - UIScrollView Delegate -
     
-    public func scrollViewDidScroll(scrollView: UIScrollView) {
+    open func scrollViewDidScroll(_ scrollView: UIScrollView) {
         if !animationInProgress {
             var page = scrollView.contentOffset.x / scrollView.frame.size.width
             if fmod(page, 1) > 0.5 {

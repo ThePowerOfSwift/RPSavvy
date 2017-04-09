@@ -25,51 +25,51 @@ public var sideMenuNavigationController : UINavigationController?
 
 let kConstantObj = kConstant()
 
-let lobby: Lobby = (UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier("Lobby") as? Lobby)!
+let lobby: Lobby = (UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "Lobby") as? Lobby)!
 
 let activityIndicatorView: ActivityIndicatorAnimationImagesTrianglePath = ActivityIndicatorAnimationImagesTrianglePath.sharedInstance
 
-let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+let appDelegate = UIApplication.shared.delegate as! AppDelegate
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate{
     
     var window: UIWindow?
     var shortcutItem: UIApplicationShortcutItem?
-    var devicePushToken: NSData!
+    var devicePushToken: Data!
     
-    func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-        self.window = UIWindow(frame: UIScreen.mainScreen().bounds)
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+        self.window = UIWindow(frame: UIScreen.main.bounds)
         
         let configuration = ParseClientConfiguration {
             $0.applicationId = "fHbRTxXoHWO5hvekgxjTtKHbzA3YfscitEOVV7IY"
             $0.clientKey = "NqYUndIvjTTMEwxBOfnfDqSkeAW2ozPUdmbPKAOz"
             $0.server = "https://parseapi.back4app.com"
-            $0.localDatastoreEnabled = false // If you need to enable local data store
+            $0.isLocalDatastoreEnabled = false // If you need to enable local data store
         }
-        Parse.initializeWithConfiguration(configuration)
+        Parse.initialize(with: configuration)
         PFUser.enableRevocableSessionInBackground() // If you're using Legacy Sessions
         
-        PFFacebookUtils.initializeFacebookWithApplicationLaunchOptions(launchOptions)
-        PFTwitterUtils.initializeWithConsumerKey("APpi9A571ENucSyqb1MMI1kAA",  consumerSecret:"k66zw9hfJFJ7LYJiwDGdDqPsfCMcoqHuwLJMXtmAf8HvyLaQa1")
+        PFFacebookUtils.initializeFacebook(applicationLaunchOptions: launchOptions)
+        PFTwitterUtils.initialize(withConsumerKey: "APpi9A571ENucSyqb1MMI1kAA",  consumerSecret:"k66zw9hfJFJ7LYJiwDGdDqPsfCMcoqHuwLJMXtmAf8HvyLaQa1")
         kConstantObj.appDelegateSetup()
         configSettings()
         Fabric.with([Twitter.self, Crashlytics.self])
         var performShortcutDelegate = true
-        if let shortcutItem = launchOptions?[UIApplicationLaunchOptionsShortcutItemKey] as? UIApplicationShortcutItem {
+        if let shortcutItem = launchOptions?[UIApplicationLaunchOptionsKey.shortcutItem] as? UIApplicationShortcutItem {
             self.shortcutItem = shortcutItem
             performShortcutDelegate = false
         } else {
             return performShortcutDelegate
         }
-        if let dict: NSDictionary = launchOptions {
+        if let dict: NSDictionary = launchOptions as! NSDictionary {
             handePush(dict)
         }
         return FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions: launchOptions)
     }
     
-    func applicationDidBecomeActive(application: UIApplication) {
-        let installation = PFInstallation.currentInstallation()
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        let installation = PFInstallation.current()
         installation!.badge = 0
         installation!.saveInBackground()
         guard let shortcut = shortcutItem else { return }
@@ -78,7 +78,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
         FBSDKAppEvents.activateApp()
     }
     
-    func handleShortcut( shortcutItem:UIApplicationShortcutItem ) -> Bool {
+    func handleShortcut( _ shortcutItem:UIApplicationShortcutItem ) -> Bool {
         var succeeded = false
         if sideMenuNavigationController != nil {
             if( shortcutItem.type == "QuickMatch" ) {
@@ -95,67 +95,67 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
         return succeeded
     }
     
-    func application(application: UIApplication, performActionForShortcutItem shortcutItem: UIApplicationShortcutItem, completionHandler: (Bool) -> Void) {
+    func application(_ application: UIApplication, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
         completionHandler( handleShortcut(shortcutItem) )
     }
     
-    func application(application: UIApplication, performFetchWithCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
-        completionHandler(.NewData)
+    func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        completionHandler(.newData)
     }
     
-    func applicationWillResignActive(application: UIApplication) {
+    func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
     }
     
-    func applicationDidEnterBackground(application: UIApplication) {
+    func applicationDidEnterBackground(_ application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     }
     
-    func applicationWillEnterForeground(application: UIApplication) {
+    func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
     }
     
-    func applicationWillTerminate(application: UIApplication) {
+    func applicationWillTerminate(_ application: UIApplication) {
         //PFUser.logOut()
     }
     
     func configSettings() {
         window?.tintColor = AppConfiguration.navColor
-        UINavigationBar.appearanceWhenContainedInInstancesOfClasses([UINavigationController.self]).titleTextAttributes = (UIScreen.mainScreen().bounds.width <= 320) ?[NSForegroundColorAttributeName : UIColor.whiteColor(), NSFontAttributeName : UIFont(name: "AmericanTypewriter-Bold", size: 22)!] : [NSForegroundColorAttributeName : UIColor.whiteColor(), NSFontAttributeName : UIFont(name: "AmericanTypewriter-Bold", size: 25)!]
-        UINavigationBar.appearanceWhenContainedInInstancesOfClasses([UINavigationController.self]).barTintColor = AppConfiguration.navColor
-        UINavigationBar.appearanceWhenContainedInInstancesOfClasses([UINavigationController.self]).tintColor = AppConfiguration.navText
-        UIBarButtonItem.appearanceWhenContainedInInstancesOfClasses([UINavigationBar.self]).setTitleTextAttributes([NSForegroundColorAttributeName : UIColor.whiteColor(), NSFontAttributeName : (UIScreen.mainScreen().bounds.width <= 320) ? UIFont(name: "AmericanTypewriter-Bold", size: 15)! : UIFont(name: "AmericanTypewriter-Bold", size: 17)!], forState: .Normal)
-        UIBarButtonItem.appearanceWhenContainedInInstancesOfClasses([UISearchBar.self]).setTitleTextAttributes([NSForegroundColorAttributeName : UIColor.whiteColor(), NSFontAttributeName : (UIScreen.mainScreen().bounds.width <= 320) ? UIFont(name: "AmericanTypewriter-Bold", size: 15)! : UIFont(name: "AmericanTypewriter-Bold", size: 18)!], forState: .Normal)
+        UINavigationBar.appearance(whenContainedInInstancesOf: [UINavigationController.self]).titleTextAttributes = (UIScreen.main.bounds.width <= 320) ?[NSForegroundColorAttributeName : UIColor.white, NSFontAttributeName : UIFont(name: "AmericanTypewriter-Bold", size: 22)!] : [NSForegroundColorAttributeName : UIColor.white, NSFontAttributeName : UIFont(name: "AmericanTypewriter-Bold", size: 25)!]
+        UINavigationBar.appearance(whenContainedInInstancesOf: [UINavigationController.self]).barTintColor = AppConfiguration.navColor
+        UINavigationBar.appearance(whenContainedInInstancesOf: [UINavigationController.self]).tintColor = AppConfiguration.navText
+        UIBarButtonItem.appearance(whenContainedInInstancesOf: [UINavigationBar.self]).setTitleTextAttributes([NSForegroundColorAttributeName : UIColor.white, NSFontAttributeName : (UIScreen.main.bounds.width <= 320) ? UIFont(name: "AmericanTypewriter-Bold", size: 15)! : UIFont(name: "AmericanTypewriter-Bold", size: 17)!], for: UIControlState())
+        UIBarButtonItem.appearance(whenContainedInInstancesOf: [UISearchBar.self]).setTitleTextAttributes([NSForegroundColorAttributeName : UIColor.white, NSFontAttributeName : (UIScreen.main.bounds.width <= 320) ? UIFont(name: "AmericanTypewriter-Bold", size: 15)! : UIFont(name: "AmericanTypewriter-Bold", size: 18)!], for: UIControlState())
     }
     
-    func application(application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: NSData) {
-        let installation = PFInstallation.currentInstallation()
-        installation!.setDeviceTokenFromData(deviceToken)
-        installation!["User"] = PFUser.currentUser()
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        let installation = PFInstallation.current()
+        installation!.setDeviceTokenFrom(deviceToken)
+        installation!["User"] = PFUser.current()
         installation!.saveInBackground()
     }
     
-    func handePush(dict: NSDictionary) {
+    func handePush(_ dict: NSDictionary) {
         let ap = (dict["aps"] as? NSDictionary)!
         let type: String = (dict["type"] as? String)!
         let alertMessage: String = (ap["alert"] as? String)!
         hambutton.increment()
-        PFUser.currentUser()!.incrementKey(type)
+        PFUser.current()!.incrementKey(type)
         if type == "friendAccepted" {
-            if PFUser.currentUser()!["Friends"] != nil {
-                var friends: [String] = PFUser.currentUser()!["Friends"] as! [String]
+            if PFUser.current()!["Friends"] != nil {
+                var friends: [String] = PFUser.current()!["Friends"] as! [String]
                 if !friends.contains(dict["ObjID"] as! String) {
                     friends.append(dict["ObjID"] as! String)
-                    PFUser.currentUser()!["Friends"] = friends
-                    PFUser.currentUser()!.saveInBackground()
+                    PFUser.current()!["Friends"] = friends
+                    PFUser.current()!.saveInBackground()
                 } else {
-                    PFUser.currentUser()!["Friends"] = friends
-                    PFUser.currentUser()!.saveInBackground()
+                    PFUser.current()!["Friends"] = friends
+                    PFUser.current()!.saveInBackground()
                 }
             } else {
-                PFUser.currentUser()!["Friends"] = [dict["ObjID"] as! String]
-                PFUser.currentUser()!.saveInBackground()
+                PFUser.current()!["Friends"] = [dict["ObjID"] as! String]
+                PFUser.current()!.saveInBackground()
             }
         }
         guard let vc = sideMenuNavigationController!.topViewController else {
@@ -191,10 +191,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
         static let loaderTitleOffset: CGFloat = 5
     }
     
-    func pushHandling(vc: UIViewController, alertMessage: String, type: String, dict: NSDictionary) {
-        let titleLabel = CGRect(x: (UIScreen.mainScreen().bounds.width - UIScreen.mainScreen().bounds.width - 60) / 2 + 20, y: 0, width: UIScreen.mainScreen().bounds.width - 60, height: UIScreen.mainScreen().bounds.height)
+    func pushHandling(_ vc: UIViewController, alertMessage: String, type: String, dict: NSDictionary) {
+        let titleLabel = CGRect(x: (UIScreen.main.bounds.width - UIScreen.main.bounds.width - 60) / 2 + 20, y: 0, width: UIScreen.main.bounds.width - 60, height: UIScreen.main.bounds.height)
         let imageBounds = CGRect(x: titleLabel.origin.x - Dimensions.imageSize - Dimensions.loaderTitleOffset, y: (Dimensions.height - Dimensions.imageSize) / 2, width: Dimensions.imageSize, height: Dimensions.imageSize)
-        PFUser.query()?.getObjectInBackgroundWithId(dict["ObjID"] as! String, block: { user, error in
+        PFUser.query()?.getObjectInBackground(withId: dict["ObjID"] as! String, block: { user, error in
             if error == nil {
                 let thisUser: PFUser = user as! PFUser
                 thisUser.getProfPic(imageBounds) { (image) in
@@ -212,27 +212,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
                                 if type == "gameInvite" {
                                     self.NavPush("RequestTable", completion: nil)
                                 } else if type == "accepted" {
-                                    PFQuery(className: "ActiveSessions").getObjectInBackgroundWithId((dict["gameID"] as? String)!, block: {
+                                    PFQuery(className: "ActiveSessions").getObjectInBackground(withId: (dict["gameID"] as? String)!, block: {
                                         object, error in
                                         if error == nil {
                                             AppConfiguration.activeSession = object!
-                                            AppConfiguration.activeSession!["callerTitle"] = "\(PFUser.currentUser()!.Fullname()) joined your game"
+                                            AppConfiguration.activeSession!["callerTitle"] = "\(PFUser.current()!.Fullname()) joined your game"
                                             AppConfiguration.activeSession!["Accepted"] = true
-                                            AppConfiguration.activeSession!.saveInBackgroundWithBlock({success, error in
+                                            AppConfiguration.activeSession!.saveInBackground(block: {success, error in
                                                 if error == nil && success == true {
                                                     if thisUser.objectId! != (object!["receiver"] as! PFUser).objectId! {
                                                         let push = PFPush()
                                                         let data = [
-                                                            "alert" : "\(PFUser.currentUser()!.Fullname()) joined your game",
+                                                            "alert" : "\(PFUser.current()!.Fullname()) joined your game",
                                                             "badge" : "Increment",
-                                                            "ObjID" : (PFUser.currentUser()?.objectId!)! as String,
+                                                            "ObjID" : (PFUser.current()?.objectId!)! as String,
                                                             "gameID" : object!.objectId!,
                                                             "type" : "accepted"]
                                                         let installQuery = PFInstallation.query()
                                                         installQuery?.whereKey("User", equalTo: thisUser)
-                                                        push.setQuery(installQuery)
+                                                        push.setQuery(installQuery as? PFQuery<PFInstallation>)
                                                         push.setData(data)
-                                                        push.sendPushInBackgroundWithBlock({ success, error in
+                                                        push.sendInBackground(block: { success, error in
                                                             if error != nil && success == false {
                                                                 ProgressHUD.showError("Error sending opponent notification")
                                                             } else {
@@ -267,7 +267,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
         })
     }
     
-    func application(application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: NSError) {
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("didFail! with error: \(error)")
     }
     
@@ -306,7 +306,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
     
     //MARK: - Push Handling
     
-    func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject], fetchCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         let UserInfo: NSDictionary = userInfo as NSDictionary
         /*guard let aps: NSDictionary = userInfo["aps"] as? NSDictionary else {
             completionHandler(.NoData)
@@ -346,23 +346,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
             completionHandler(.NewData)
         }*/
         handePush(UserInfo)
-        completionHandler(.NewData)
+        completionHandler(.newData)
     }
     
-    func application(application: UIApplication, openURL url: NSURL, sourceApplication: String?, annotation: AnyObject) -> Bool {
-        return FBSDKApplicationDelegate.sharedInstance().application(application, openURL: url, sourceApplication: sourceApplication, annotation: annotation)
+    func application(_ application: UIApplication, open url: URL, sourceApplication: String?, annotation: Any) -> Bool {
+        return FBSDKApplicationDelegate.sharedInstance().application(application, open: url, sourceApplication: sourceApplication, annotation: annotation)
     }
     
 }
 
 public struct AppConfiguration {
     
-    public static var cachePolicy: PFCachePolicy = PFCachePolicy.NetworkElseCache
+    public static var cachePolicy: PFCachePolicy = PFCachePolicy.networkElseCache
     public static let ApiKey = "45441312"
     public static var SessionID: String?
     public static var publisherToken: String?
     public static var subscriberToken: String?
-    private static var session: PFObject?
+    fileprivate static var session: PFObject?
     public static var activeSession: PFObject? {
         get {
             return AppConfiguration.session
@@ -392,18 +392,18 @@ public struct AppConfiguration {
     public static var userImage: UIImage = UIImage(named: "profile_blank")!
     public static var navTitle = ""
     
-    public static var startingColor: Color = Color.grayColor().darkenedColor(0.5)
+    public static var startingColor: Color = Color.gray.darkenedColor(0.5)
     
-    public static var navColor: UIColor = UIColor.grayColor().darkenedColor(0.5)
+    public static var navColor: UIColor = UIColor.gray.darkenedColor(0.5)
     public static var navSelectedColor: UIColor = UIColor(red: 0.497982442378998, green: 0.498071908950806, blue: 0.497976779937744, alpha: 1.0)
-    public static var navText: UIColor =  UIColor.whiteColor()
+    public static var navText: UIColor =  UIColor.white
     public static var backgroundColor = UIColor.peachColor()
     public static var appFont = UIFont(name: "AmericanTypewriter", size: 18)!
     public static var appFontSmall = UIFont(name: "AmericanTypewriter", size: 12)!
     public static var appFontSmallBold = UIFont(name: "AmericanTypewriter-Bold", size: 12)!
-    public static var sideMenuColor = UIColor.yellowColor().complementaryColor()
+    public static var sideMenuColor = UIColor.yellow.complementaryColor()
     public static var sideMenuText: UIColor =  UIColor.antiqueWhiteColor()
-    public static var textAttributes: [String : AnyObject] = [NSForegroundColorAttributeName : UIColor.whiteColor(), NSFontAttributeName : UIFont(name: "AmericanTypewriter", size: 18)!] as [String : AnyObject]
-    public static var smallTextAttributes: [String : AnyObject] = [NSForegroundColorAttributeName : UIColor.lightGrayColor(), NSFontAttributeName : UIFont(name: "AmericanTypewriter", size: 14)!] as [String : AnyObject]
+    public static var textAttributes: [String : AnyObject] = [NSForegroundColorAttributeName : UIColor.white, NSFontAttributeName : UIFont(name: "AmericanTypewriter", size: 18)!] as [String : AnyObject]
+    public static var smallTextAttributes: [String : AnyObject] = [NSForegroundColorAttributeName : UIColor.lightGray, NSFontAttributeName : UIFont(name: "AmericanTypewriter", size: 14)!] as [String : AnyObject]
     
 }

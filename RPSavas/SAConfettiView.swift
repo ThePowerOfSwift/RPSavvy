@@ -10,41 +10,41 @@ import UIKit
 import QuartzCore
 
 public protocol SAConfettiViewDelegate: class {
-    func confettiViewTapped(view: SAConfettiView)
+    func confettiViewTapped(_ view: SAConfettiView)
 }
 
 
-public class SAConfettiView: UIView, AVAudioPlayerDelegate {
+open class SAConfettiView: UIView, AVAudioPlayerDelegate {
     
     var delegate: SAConfettiViewDelegate?
     
     public enum ConfettiType {
-        case Confetti
-        case Triangle
-        case Star
-        case Diamond
-        case Image(UIImage)
+        case confetti
+        case triangle
+        case star
+        case diamond
+        case image(UIImage)
     }
     
     var emitter: CAEmitterLayer!
-    public var colors: [UIColor]!
-    public var intensity: Float!
-    public var type: ConfettiType!
-    private var active :Bool!
+    open var colors: [UIColor]!
+    open var intensity: Float!
+    open var type: ConfettiType!
+    fileprivate var active :Bool!
     
     lazy var Win: UILabel = {
-        let view: UILabel = UILabel(frame: CGRect(x: 5, y: UIScreen.mainScreen().bounds.maxY + 90, width: UIScreen.mainScreen().bounds.width - 10, height: 80))
+        let view: UILabel = UILabel(frame: CGRect(x: 5, y: UIScreen.main.bounds.maxY + 90, width: UIScreen.main.bounds.width - 10, height: 80))
         view.textColor = UIColor.infoBlueColor()
         view.text = "You Win!"
-        view.backgroundColor = UIColor.whiteColor()
-        view.layer.borderColor = UIColor.infoBlueColor().CGColor
+        view.backgroundColor = UIColor.white
+        view.layer.borderColor = UIColor.infoBlueColor().cgColor
         view.layer.borderWidth = 3.0
         view.layer.cornerRadius = 8.0
         view.layer.masksToBounds = true
         view.adjustsFontSizeToFitWidth = true
-        view.userInteractionEnabled = true
+        view.isUserInteractionEnabled = true
         view.font = UIFont(name: "AmericanTypewriter-Bold", size: 50)
-        view.textAlignment = NSTextAlignment.Center
+        view.textAlignment = NSTextAlignment.center
         return view
     }()
     
@@ -52,12 +52,12 @@ public class SAConfettiView: UIView, AVAudioPlayerDelegate {
     
     var cheeringPlayer: AVAudioPlayer?
     
-    public func audioPlayerDidFinishPlaying(player: AVAudioPlayer, successfully flag: Bool) {
+    open func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         //cheeringPlayer?.play()
     }
     
     func tappedWin() {
-        UIView.animateWithDuration(0.5, delay: 0.0, options: UIViewAnimationOptions.CurveEaseInOut, animations: {
+        UIView.animate(withDuration: 0.5, delay: 0.0, options: UIViewAnimationOptions(), animations: {
             self.Win.frame = self.Win.frame.offsetBy(dx: 0, dy: 270)//self.bounds.height)
             }, completion: {_ in
                 if self.delegate != nil {
@@ -83,11 +83,11 @@ public class SAConfettiView: UIView, AVAudioPlayerDelegate {
                   UIColor(red:0.30, green:0.76, blue:0.85, alpha:1.0),
                   UIColor(red:0.58, green:0.39, blue:0.55, alpha:1.0)]
         intensity = 1.0
-        type = .Confetti
+        type = .confetti
         active = false
-        let url = NSBundle.mainBundle().URLForResource("Cheering", withExtension: "wav")!
+        let url = Bundle.main.url(forResource: "Cheering", withExtension: "wav")!
         do {
-            cheeringPlayer = try AVAudioPlayer(contentsOfURL: url)
+            cheeringPlayer = try AVAudioPlayer(contentsOf: url)
             cheeringPlayer?.delegate = self
             cheeringPlayer?.prepareToPlay()
             guard let player = cheeringPlayer else { return }
@@ -97,7 +97,7 @@ public class SAConfettiView: UIView, AVAudioPlayerDelegate {
         }
     }
     
-    public func startConfetti(view: GameView) {
+    open func startConfetti(_ view: GameView) {
         emitter = CAEmitterLayer()
         emitter.emitterPosition = CGPoint(x: frame.size.width / 2.0, y: 0)
         emitter.emitterShape = kCAEmitterLayerLine
@@ -108,21 +108,21 @@ public class SAConfettiView: UIView, AVAudioPlayerDelegate {
         }
         emitter.emitterCells = cells
         view.addSubview(self)
-        view.bringSubviewToFront(view.readyPlayButton)
-        Win.frame = CGRect(x: 5, y: UIScreen.mainScreen().bounds.maxY + 90, width: UIScreen.mainScreen().bounds.width - 10, height: 80)
+        view.bringSubview(toFront: view.readyPlayButton)
+        Win.frame = CGRect(x: 5, y: UIScreen.main.bounds.maxY + 90, width: UIScreen.main.bounds.width - 10, height: 80)
         self.addSubview(Win)
-        UIView.animateWithDuration(0.5, delay: 0.0, options: UIViewAnimationOptions.CurveEaseInOut, animations: {
+        UIView.animate(withDuration: 0.5, delay: 0.0, options: UIViewAnimationOptions(), animations: {
             view.Rock.frame = view.Rock.frame.offsetBy(dx: 0, dy: 300)
             }, completion: nil)
-        UIView.animateWithDuration(0.5, delay: 0.2, options: UIViewAnimationOptions.CurveEaseInOut, animations: {
+        UIView.animate(withDuration: 0.5, delay: 0.2, options: UIViewAnimationOptions(), animations: {
             view.Paper.frame = view.Paper.frame.offsetBy(dx: 0, dy: 300)
             }, completion: nil)
-        UIView.animateWithDuration(0.5, delay: 0.4, options: UIViewAnimationOptions.CurveEaseInOut, animations: {
+        UIView.animate(withDuration: 0.5, delay: 0.4, options: UIViewAnimationOptions(), animations: {
             view.Scissors.frame = view.Scissors.frame.offsetBy(dx: 0, dy: 300)
             }, completion: {_ in
                 self.cheeringPlayer?.play()
-                UIView.animateWithDuration(0.5, delay: 0.0, options: UIViewAnimationOptions.CurveEaseInOut, animations: {
-                    self.Win.frame = CGRect(x: 5, y: UIScreen.mainScreen().bounds.maxY - 150, width: UIScreen.mainScreen().bounds.width - 10, height: 80)
+                UIView.animate(withDuration: 0.5, delay: 0.0, options: UIViewAnimationOptions(), animations: {
+                    self.Win.frame = CGRect(x: 5, y: UIScreen.main.bounds.maxY - 150, width: UIScreen.main.bounds.width - 10, height: 80)
                     self.layer.addSublayer(self.emitter)
                     self.active = true
                     }, completion: {_ in
@@ -132,7 +132,7 @@ public class SAConfettiView: UIView, AVAudioPlayerDelegate {
     }
     
     
-    public func startConfettiPractice(practice: Practice) {
+    open func startConfettiPractice(_ practice: Practice) {
         emitter = CAEmitterLayer()
         emitter.emitterPosition = CGPoint(x: frame.size.width / 2.0, y: 0)
         emitter.emitterShape = kCAEmitterLayerLine
@@ -143,21 +143,21 @@ public class SAConfettiView: UIView, AVAudioPlayerDelegate {
         }
         emitter.emitterCells = cells
         practice.view.addSubview(self)
-        practice.view.bringSubviewToFront(practice.readyPlayButton)
-        Win.frame = CGRect(x: 5, y: UIScreen.mainScreen().bounds.maxY + 90, width: UIScreen.mainScreen().bounds.width - 10, height: 80)
+        practice.view.bringSubview(toFront: practice.readyPlayButton)
+        Win.frame = CGRect(x: 5, y: UIScreen.main.bounds.maxY + 90, width: UIScreen.main.bounds.width - 10, height: 80)
         self.addSubview(Win)
-        UIView.animateWithDuration(0.5, delay: 0.0, options: UIViewAnimationOptions.CurveEaseInOut, animations: {
+        UIView.animate(withDuration: 0.5, delay: 0.0, options: UIViewAnimationOptions(), animations: {
             practice.Rock.frame = practice.Rock.frame.offsetBy(dx: 0, dy: 300)
             }, completion: nil)
-        UIView.animateWithDuration(0.5, delay: 0.2, options: UIViewAnimationOptions.CurveEaseInOut, animations: {
+        UIView.animate(withDuration: 0.5, delay: 0.2, options: UIViewAnimationOptions(), animations: {
             practice.Paper.frame = practice.Paper.frame.offsetBy(dx: 0, dy: 300)
             }, completion: nil)
-        UIView.animateWithDuration(0.5, delay: 0.4, options: UIViewAnimationOptions.CurveEaseInOut, animations: {
+        UIView.animate(withDuration: 0.5, delay: 0.4, options: UIViewAnimationOptions(), animations: {
             practice.Scissors.frame = practice.Scissors.frame.offsetBy(dx: 0, dy: 300)
             }, completion: {_ in
                 self.cheeringPlayer?.play()
-                UIView.animateWithDuration(0.5, delay: 0.0, options: UIViewAnimationOptions.CurveEaseInOut, animations: {
-                    self.Win.frame = CGRect(x: 5, y: UIScreen.mainScreen().bounds.maxY - 150, width: UIScreen.mainScreen().bounds.width - 10, height: 80)
+                UIView.animate(withDuration: 0.5, delay: 0.0, options: UIViewAnimationOptions(), animations: {
+                    self.Win.frame = CGRect(x: 5, y: UIScreen.main.bounds.maxY - 150, width: UIScreen.main.bounds.width - 10, height: 80)
                     self.layer.addSublayer(self.emitter)
                     self.active = true
                     }, completion: {_ in
@@ -168,7 +168,7 @@ public class SAConfettiView: UIView, AVAudioPlayerDelegate {
 
     
     
-    public func startFinalConfettiPractice(practice: Practice) {
+    open func startFinalConfettiPractice(_ practice: Practice) {
         cheeringPlayer?.play()
         emitter = CAEmitterLayer()
         emitter.emitterPosition = CGPoint(x: frame.size.width / 2.0, y: 0)
@@ -180,13 +180,13 @@ public class SAConfettiView: UIView, AVAudioPlayerDelegate {
         }
         emitter.emitterCells = cells
         practice.view.addSubview(self)
-        practice.view.bringSubviewToFront(practice.readyPlayButton)
+        practice.view.bringSubview(toFront: practice.readyPlayButton)
         self.layer.addSublayer(self.emitter)
         self.active = true
         practice.rematchView.showRematch()
     }
     
-    public func startFinalConfetti(view: GameView) {
+    open func startFinalConfetti(_ view: GameView) {
         cheeringPlayer?.play()
         emitter = CAEmitterLayer()
         emitter.emitterPosition = CGPoint(x: frame.size.width / 2.0, y: 0)
@@ -198,7 +198,7 @@ public class SAConfettiView: UIView, AVAudioPlayerDelegate {
         }
         emitter.emitterCells = cells
         view.addSubview(self)
-        view.bringSubviewToFront(view.readyPlayButton)
+        view.bringSubview(toFront: view.readyPlayButton)
         self.layer.addSublayer(self.emitter)
         self.active = true
         view.rematchView.showRematch()
@@ -206,70 +206,70 @@ public class SAConfettiView: UIView, AVAudioPlayerDelegate {
 
 
     
-    public func stopPractice(practice: Practice) {
+    open func stopPractice(_ practice: Practice) {
         emitter?.birthRate = 0
         active = false
         cheeringPlayer?.stop()
-        practice.view.bringSubviewToFront(practice.readyPlayButton)
+        practice.view.bringSubview(toFront: practice.readyPlayButton)
     }
     
-    public func stopConfettiPractice(practice: Practice) {
+    open func stopConfettiPractice(_ practice: Practice) {
         emitter?.birthRate = 0
         active = false
-        UIView.animateWithDuration(0.5, delay: 0.0, options: UIViewAnimationOptions.CurveEaseInOut, animations: {
+        UIView.animate(withDuration: 0.5, delay: 0.0, options: UIViewAnimationOptions(), animations: {
             self.Win.frame = self.Win.frame.offsetBy(dx: 0, dy: 270)
-            practice.readyPlayButton.frame = CGRect(x: 5, y: UIScreen.mainScreen().bounds.maxY - 150, width: UIScreen.mainScreen().bounds.width - 10, height: 80)
+            practice.readyPlayButton.frame = CGRect(x: 5, y: UIScreen.main.bounds.maxY - 150, width: UIScreen.main.bounds.width - 10, height: 80)
             }, completion: {_ in
                 self.Win.removeFromSuperview()
                 self.cheeringPlayer?.stop()
-                practice.readyPlayButton.enabled = true
+                practice.readyPlayButton.isEnabled = true
         })
     }
     
     
-    public func stop(view: GameView) {
+    open func stop(_ view: GameView) {
         emitter?.birthRate = 0
         active = false
         cheeringPlayer?.stop()
-        view.bringSubviewToFront(view.readyPlayButton)
+        view.bringSubview(toFront: view.readyPlayButton)
     }
     
-    public func stopConfetti(view: GameView) {
+    open func stopConfetti(_ view: GameView) {
         emitter?.birthRate = 0
         active = false
-        UIView.animateWithDuration(0.5, delay: 0.0, options: UIViewAnimationOptions.CurveEaseInOut, animations: {
+        UIView.animate(withDuration: 0.5, delay: 0.0, options: UIViewAnimationOptions(), animations: {
             self.Win.frame = self.Win.frame.offsetBy(dx: 0, dy: 270)
-            view.readyPlayButton.frame = CGRect(x: 5, y: UIScreen.mainScreen().bounds.maxY - 150, width: UIScreen.mainScreen().bounds.width - 10, height: 80)
+            view.readyPlayButton.frame = CGRect(x: 5, y: UIScreen.main.bounds.maxY - 150, width: UIScreen.main.bounds.width - 10, height: 80)
             }, completion: {_ in
                 self.Win.removeFromSuperview()
                 self.cheeringPlayer?.stop()
-                view.readyPlayButton.enabled = true
+                view.readyPlayButton.isEnabled = true
         })
     }
     
-    func imageForType(type: ConfettiType) -> UIImage? {
+    func imageForType(_ type: ConfettiType) -> UIImage? {
         var fileName: String!
         switch type {
-        case .Confetti:
+        case .confetti:
             fileName = "confetti"
-        case .Triangle:
+        case .triangle:
             fileName = "triangle"
-        case .Star:
+        case .star:
             fileName = "star"
-        case .Diamond:
+        case .diamond:
             fileName = "diamond"
-        case let .Image(customImage):
+        case let .image(customImage):
             return customImage
         }
         return UIImage(named: fileName)!
     }
     
-    func confettiWithColor(color: UIColor) -> CAEmitterCell {
+    func confettiWithColor(_ color: UIColor) -> CAEmitterCell {
         let confetti = CAEmitterCell()
         confetti.birthRate = 36.0 * intensity
         confetti.lifetime = 14.0 * intensity
         confetti.lifetimeRange = 0
-        confetti.color = color.CGColor
+        confetti.color = color.cgColor
         confetti.velocity = CGFloat(350.0 * intensity)
         confetti.velocityRange = CGFloat(80.0 * intensity)
         confetti.emissionLongitude = CGFloat(M_PI)
@@ -278,11 +278,11 @@ public class SAConfettiView: UIView, AVAudioPlayerDelegate {
         confetti.spinRange = CGFloat(4.0 * intensity)
         confetti.scaleRange = CGFloat(intensity)
         confetti.scaleSpeed = CGFloat(-0.1 * intensity)
-        confetti.contents = imageForType(type)!.CGImage
+        confetti.contents = imageForType(type)!.cgImage
         return confetti
     }
     
-    public func isActive() -> Bool {
+    open func isActive() -> Bool {
         return self.active
     }
 }

@@ -11,6 +11,30 @@ import UIKit
 import ParseUI
 import Parse
 import CoreGraphics
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
+
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l > r
+  default:
+    return rhs < lhs
+  }
+}
+
 
 
 // MARK: - String
@@ -41,7 +65,7 @@ extension String {
     
 }
 
-let hambutton: MIBadgeButton = MIBadgeButton(type: .Custom)
+let hambutton: MIBadgeButton = MIBadgeButton(type: .custom)
 
 // MARK: - UIViewController
 var prevOffset: CGFloat?
@@ -51,29 +75,29 @@ extension UIViewController {
     
     
     func addKeyboard() {
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(self.keyboardWillShow(_:)), name:"UIKeyboardWillShow", object: self.view.window)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(self.keyboardWillHide(_:)), name:"UIKeyboardWillHide", object: self.view.window)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillShow(_:)), name:NSNotification.Name(rawValue: "UIKeyboardWillShow"), object: self.view.window)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardWillHide(_:)), name:NSNotification.Name(rawValue: "UIKeyboardWillHide"), object: self.view.window)
     }
     
     func removeKeyboard() {
-        NSNotificationCenter.defaultCenter().removeObserver(self, name:"UIKeyboardWillShow", object: self.view.window)
-        NSNotificationCenter.defaultCenter().removeObserver(self, name:"UIKeyboardWillHide", object: self.view.window)
+        NotificationCenter.default.removeObserver(self, name:NSNotification.Name(rawValue: "UIKeyboardWillShow"), object: self.view.window)
+        NotificationCenter.default.removeObserver(self, name:NSNotification.Name(rawValue: "UIKeyboardWillHide"), object: self.view.window)
         prevOffset = nil
     }
     
-    func keyboardWillHide(sender: NSNotification) {
-        let userInfo: [NSObject : AnyObject] = (sender as NSNotification).userInfo!
-        let keyboardSize: CGSize = userInfo[UIKeyboardFrameBeginUserInfoKey]!.CGRectValue().size
+    func keyboardWillHide(_ sender: Notification) {
+        let userInfo: [AnyHashable: Any] = (sender as Notification).userInfo!
+        let keyboardSize: CGSize = (userInfo[UIKeyboardFrameBeginUserInfoKey]! as AnyObject).cgRectValue.size
         self.view.frame.origin.y += keyboardSize.height
         prevOffset = nil
     }
     
-    func keyboardWillShow(sender: NSNotification) {
-        let userInfo: [NSObject : AnyObject] = (sender as NSNotification).userInfo!
-        let keyboardSize: CGSize = userInfo[UIKeyboardFrameBeginUserInfoKey]!.CGRectValue().size
-        let offset: CGSize = userInfo[UIKeyboardFrameEndUserInfoKey]!.CGRectValue().size
+    func keyboardWillShow(_ sender: Notification) {
+        let userInfo: [AnyHashable: Any] = (sender as Notification).userInfo!
+        let keyboardSize: CGSize = (userInfo[UIKeyboardFrameBeginUserInfoKey]! as AnyObject).cgRectValue.size
+        let offset: CGSize = (userInfo[UIKeyboardFrameEndUserInfoKey]! as AnyObject).cgRectValue.size
         if prevOffset == nil {
-            UIView.animateWithDuration(0.1, animations: { () -> Void in
+            UIView.animate(withDuration: 0.1, animations: { () -> Void in
                 self.view.frame.origin.y -= keyboardSize.height
                 prevOffset = keyboardSize.height
             })
@@ -81,13 +105,13 @@ extension UIViewController {
             if prevOffset > offset.height {
                 let newOffset = (prevOffset! - offset.height)
                 prevOffset = newOffset
-                UIView.animateWithDuration(0.1, animations: { () -> Void in
+                UIView.animate(withDuration: 0.1, animations: { () -> Void in
                     self.view.frame.origin.y += newOffset
                 })
             } else {
                 let newOffset = (offset.height - prevOffset!)
                 prevOffset = newOffset
-                UIView.animateWithDuration(0.1, animations: { () -> Void in
+                UIView.animate(withDuration: 0.1, animations: { () -> Void in
                     self.view.frame.origin.y -= newOffset
                 })
             }
@@ -95,54 +119,54 @@ extension UIViewController {
     }
     
     func hideBackButton() {
-        navigationItem.setLeftBarButtonItem(UIBarButtonItem(title: "", style: UIBarButtonItemStyle.Plain, target: nil, action: nil), animated: false)
+        navigationItem.setLeftBarButton(UIBarButtonItem(title: "", style: UIBarButtonItemStyle.plain, target: nil, action: nil), animated: false)
     }
     
-    func photoButtonPressed(sender: UITapGestureRecognizer) {
-        let alertVC = UIAlertController(title: "Upload New Profile Picture", message: "How would you like to upload your photo?", preferredStyle: UIAlertControllerStyle.ActionSheet)
-        let Take = UIAlertAction(title: "Take Picture", style: UIAlertActionStyle.Default) { (UIAlertAction) -> Void in
+    func photoButtonPressed(_ sender: UITapGestureRecognizer) {
+        let alertVC = UIAlertController(title: "Upload New Profile Picture", message: "How would you like to upload your photo?", preferredStyle: UIAlertControllerStyle.actionSheet)
+        let Take = UIAlertAction(title: "Take Picture", style: UIAlertActionStyle.default) { (UIAlertAction) -> Void in
             Camera.shouldStartCamera(self, canEdit: true, frontFacing: true)
         }
-        let Lib = UIAlertAction(title: "Choose from library", style: UIAlertActionStyle.Default) { (UIAlertAction) -> Void in
+        let Lib = UIAlertAction(title: "Choose from library", style: UIAlertActionStyle.default) { (UIAlertAction) -> Void in
             Camera.shouldStartPhotoLibrary(self, canEdit: true)
         }
-        let Cancel = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.Cancel) { (UIAlertAction) -> Void in}
+        let Cancel = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.cancel) { (UIAlertAction) -> Void in}
         alertVC.addAction(Take)
         alertVC.addAction(Lib)
         alertVC.addAction(Cancel)
-        self.presentViewController(alertVC, animated: true, completion: nil)
+        self.present(alertVC, animated: true, completion: nil)
     }
     
     func addLogOut() {
-        self.navigationItem.setRightBarButtonItem(UIBarButtonItem(title: "Log Out", style: UIBarButtonItemStyle.Plain, target: self, action: #selector(self.tappedLogout)), animated: false)
+        self.navigationItem.setRightBarButton(UIBarButtonItem(title: "Log Out", style: UIBarButtonItemStyle.plain, target: self, action: #selector(self.tappedLogout)), animated: false)
     }
     
     func tappedLogout() {
         PFUser.logOut()
-        sideMenuNavigationController = UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier("LobbyNAV") as? UINavigationController
+        sideMenuNavigationController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "LobbyNAV") as? UINavigationController
         appDelegate.window?.rootViewController = sideMenuNavigationController
     }
     
     func addBackButton() {
-        self.navigationItem.setLeftBarButtonItem(UIBarButtonItem(title: "Back", style: UIBarButtonItemStyle.Plain, target: self, action: #selector(self.tappedBack)), animated: false)
+        self.navigationItem.setLeftBarButton(UIBarButtonItem(title: "Back", style: UIBarButtonItemStyle.plain, target: self, action: #selector(self.tappedBack)), animated: false)
     }
     
     
     func tappedBack() {
-        sideMenuNavigationController!.popViewControllerAnimated(true)
+        sideMenuNavigationController!.popViewController(animated: true)
     }
     
     func addHamMenu() {
         hambutton.frame = CGRect(x:0,y:0,width:sideMenuNavigationController!.navigationBar.frame.height,height:sideMenuNavigationController!.navigationBar.frame.height)
-        hambutton.badgeTextColor = UIColor.whiteColor()
-        hambutton.badgeBackgroundColor = UIColor.redColor()
+        hambutton.badgeTextColor = UIColor.white
+        hambutton.badgeBackgroundColor = UIColor.red
         hambutton.badgeEdgeInsets = UIEdgeInsetsMake(15, 0, 0, 10)
-        hambutton.setImage(UIImage(named: "MenuIcon")!, forState: .Normal)
-        hambutton.tintColor = .whiteColor()
-        hambutton.addTarget(self, action:  #selector(self.tappedMenu), forControlEvents: .TouchUpInside)
+        hambutton.setImage(UIImage(named: "MenuIcon")!, for: UIControlState())
+        hambutton.tintColor = .white
+        hambutton.addTarget(self, action:  #selector(self.tappedMenu), for: .touchUpInside)
         let menuButton: UIBarButtonItem = UIBarButtonItem(customView: hambutton)
-        menuButton.tintColor = UIColor.whiteColor()
-        self.navigationItem.setRightBarButtonItem(menuButton, animated: true)
+        menuButton.tintColor = UIColor.white
+        self.navigationItem.setRightBarButton(menuButton, animated: true)
     }
     
     func tappedMenu() {
@@ -154,18 +178,18 @@ extension UIViewController {
         let gradientLayer = CAGradientLayer()
         let frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height)
         gradientLayer.frame = frame
-        let color1 = UIColor.blackColor().CGColor as CGColorRef
+        let color1 = UIColor.black.cgColor as CGColor
         gradientLayer.colors = [color1, AppConfiguration.scheme[2], AppConfiguration.scheme[2], AppConfiguration.scheme[2], color1]
         gradientLayer.locations = [0.0, 0.3, 0.5, 0.7, 1.0]
-        self.view.layer.insertSublayer(gradientLayer, atIndex: 0)
+        self.view.layer.insertSublayer(gradientLayer, at: 0)
     }
     
     func addSwipers() {
         let swiper:UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(self.showMenu))
-        swiper.direction = .Left
+        swiper.direction = .left
         self.view.addGestureRecognizer(swiper)
         let swiper2:UISwipeGestureRecognizer = UISwipeGestureRecognizer(target: self, action: #selector(self.dismissMenu))
-        swiper2.direction = .Right
+        swiper2.direction = .right
         self.view.addGestureRecognizer(swiper2)
     }
 
@@ -191,24 +215,24 @@ extension UIViewController {
 extension PFImageView {
     
     
-    func imageWithString(word: String, color: UIColor? = nil, circular: Bool = true, fontAttributes: [String : AnyObject]? = nil){
+    func imageWithString(_ word: String, color: UIColor? = nil, circular: Bool = true, fontAttributes: [String : AnyObject]? = nil){
         imageSnapShotFromWords(word.getInitials(), color: color, circular: circular, fontAttributes: fontAttributes)
     }
     
-    func imageSnapShotFromWords(snapShotString: String, color: UIColor?, circular: Bool, fontAttributes: [String : AnyObject]?) {
+    func imageSnapShotFromWords(_ snapShotString: String, color: UIColor?, circular: Bool, fontAttributes: [String : AnyObject]?) {
         let attributes: [String : AnyObject]
         if let attr = fontAttributes {
             attributes = attr
         } else {
-            attributes = [NSForegroundColorAttributeName : UIColor.whiteColor(),  NSFontAttributeName : UIFont(name: "AmericanTypewriter-Semibold", size:  self.bounds.width * 0.4)!]
+            attributes = [NSForegroundColorAttributeName : UIColor.white,  NSFontAttributeName : UIFont(name: "AmericanTypewriter-Semibold", size:  self.bounds.width * 0.4)!]
         }
         let imageBackgroundColor: UIColor
         if let color = color {
             imageBackgroundColor = color
         } else {
-            imageBackgroundColor = .grayColor()
+            imageBackgroundColor = .gray
         }
-        let scale = UIScreen.mainScreen().scale
+        let scale = UIScreen.main.scale
         UIGraphicsBeginImageContextWithOptions(self.bounds.size, false, scale)
         let context = UIGraphicsGetCurrentContext()
         if circular {
@@ -217,30 +241,30 @@ extension PFImageView {
             self.layer.cornerRadius = 8.0
         }
         self.clipsToBounds = true
-        CGContextSetRGBFillColor(context!, imageBackgroundColor.red(), imageBackgroundColor.green(), imageBackgroundColor.blue(), 1.0)
-        CGContextFillRect(context!, CGRect(x: 0, y: 0, width: self.bounds.size.width, height: self.bounds.size.height))
-        let textSize = NSString(string: snapShotString).sizeWithAttributes(attributes)
-        NSString(string: snapShotString).drawInRect(CGRect(x: bounds.size.width/2 - textSize.width/2, y: bounds.size.height/2 - textSize.height/2, width: textSize.width, height: textSize.height), withAttributes: attributes)
+        context!.setFillColor(red: imageBackgroundColor.red(), green: imageBackgroundColor.green(), blue: imageBackgroundColor.blue(), alpha: 1.0)
+        context!.fill(CGRect(x: 0, y: 0, width: self.bounds.size.width, height: self.bounds.size.height))
+        let textSize = NSString(string: snapShotString).size(attributes: attributes)
+        NSString(string: snapShotString).draw(in: CGRect(x: bounds.size.width/2 - textSize.width/2, y: bounds.size.height/2 - textSize.height/2, width: textSize.width, height: textSize.height), withAttributes: attributes)
         let image: UIImage = UIGraphicsGetImageFromCurrentImageContext()!
         UIGraphicsEndImageContext()
         self.image = image
     }
     
-    func setPic(user: PFUser, completion: UserSettingClosure?) {
+    func setPic(_ user: PFUser, completion: UserSettingClosure?) {
         self.layer.cornerRadius = 8.0
         self.layer.borderWidth = 2.0
         self.tintColor = AppConfiguration.navText
-        self.layer.borderColor = UIColor.clearColor().CGColor
-        self.contentMode = .ScaleAspectFill
-        self.backgroundColor = UIColor.clearColor()
-        self.layer.borderColor = UIColor.whiteColor().CGColor
+        self.layer.borderColor = UIColor.clear.cgColor
+        self.contentMode = .scaleAspectFill
+        self.backgroundColor = UIColor.clear
+        self.layer.borderColor = UIColor.white.cgColor
         self.layer.masksToBounds = true
         if user["picture"] != nil {
             self.file = user["picture"] as? PFFile
             self.loadInBackground()
         } else {
             if user["fullname"] != nil {
-                self.imageWithString(PFUser.currentUser()!["fullname"] as! String, color: .charcoalColor(), circular: true, fontAttributes: nil)
+                self.imageWithString(PFUser.current()!["fullname"] as! String, color: .charcoalColor(), circular: true, fontAttributes: nil)
             } else {
                 self.imageWithString("R P S", color: .charcoalColor(), circular: true, fontAttributes: nil)
             }
@@ -250,22 +274,22 @@ extension PFImageView {
         }
     }
     
-    func setProfPic(color: UIColor?, completion: UserSettingClosure?) {
+    func setProfPic(_ color: UIColor?, completion: UserSettingClosure?) {
         self.layer.cornerRadius = 8.0
         self.layer.borderWidth = 2.0
         self.tintColor = AppConfiguration.navText
-        self.layer.borderColor = UIColor.clearColor().CGColor
-        self.contentMode = .ScaleAspectFill
-        self.backgroundColor = UIColor.clearColor()
-        self.layer.borderColor = color != nil ? color!.CGColor : UIColor.whiteColor().CGColor
+        self.layer.borderColor = UIColor.clear.cgColor
+        self.contentMode = .scaleAspectFill
+        self.backgroundColor = UIColor.clear
+        self.layer.borderColor = color != nil ? color!.cgColor : UIColor.white.cgColor
         self.layer.masksToBounds = true
-        if  PFUser.currentUser() != nil {
-            if PFUser.currentUser()!["picture"] != nil {
-                self.file = PFUser.currentUser()!["picture"] as? PFFile
-                self.loadInBackground({ (image, error) in
+        if  PFUser.current() != nil {
+            if PFUser.current()!["picture"] != nil {
+                self.file = PFUser.current()!["picture"] as? PFFile
+                self.load(inBackground: { (image, error) in
                     if image == nil {
                         print("Got Image")
-                        self.imageWithString(PFUser.currentUser()!["fullname"] as! String, color: .charcoalColor(), circular: false, fontAttributes: nil)
+                        self.imageWithString(PFUser.current()!["fullname"] as! String, color: .charcoalColor(), circular: false, fontAttributes: nil)
                     } else {
                         print("Fail Image")
                         self.imageWithString("R P S", color: .charcoalColor(), circular: false, fontAttributes: nil)
@@ -278,13 +302,13 @@ extension PFImageView {
                 let userQuery = PFUser.query()
                 userQuery?.cachePolicy = AppConfiguration.cachePolicy
                 userQuery?.maxCacheAge = 3600
-                userQuery?.getObjectInBackgroundWithId(PFUser.currentUser()!.objectId!, block: { (object, error) in
+                userQuery?.getObjectInBackground(withId: PFUser.current()!.objectId!, block: { (object, error) in
                     if error == nil {
-                        self.file = PFUser.currentUser()!["picture"] as? PFFile
-                        self.loadInBackground({ (image, error) in
+                        self.file = PFUser.current()!["picture"] as? PFFile
+                        self.load(inBackground: { (image, error) in
                             if image == nil {
                                 print("Got Image 2")
-                                self.imageWithString(PFUser.currentUser()!["fullname"] as! String, color: .charcoalColor(), circular: false, fontAttributes: nil)
+                                self.imageWithString(PFUser.current()!["fullname"] as! String, color: .charcoalColor(), circular: false, fontAttributes: nil)
                             } else {
                                 print("Fail Image 2")
                                 self.imageWithString("R P S", color: .charcoalColor(), circular: false, fontAttributes: nil)
@@ -307,41 +331,41 @@ extension PFImageView {
     
     func setProfPic() {
         self.image = UIImage(named: "ProfileIcon")
-        if  PFUser.currentUser() != nil {
-            self.file = PFUser.currentUser()!.profPic
+        if  PFUser.current() != nil {
+            self.file = PFUser.current()!.profPic
             self.loadInBackground()
         }
         self.layer.cornerRadius = (self.frame.height) / 2
-        self.layer.borderColor = UIColor.whiteColor().CGColor
+        self.layer.borderColor = UIColor.white.cgColor
         self.layer.borderWidth = 4.0
     }
     
-    func setProfPicOfUser(user: PFUser) {
+    func setProfPicOfUser(_ user: PFUser) {
         self.file = user.profPic
         self.loadInBackground()
         self.layer.cornerRadius = (self.frame.height) / 2
         self.tintColor = AppConfiguration.navText
-        self.layer.borderColor = AppConfiguration.navText.CGColor
+        self.layer.borderColor = AppConfiguration.navText.cgColor
         self.layer.borderWidth = 4.0
-        self.contentMode = .ScaleAspectFill
-        self.backgroundColor = UIColor.clearColor()
+        self.contentMode = .scaleAspectFill
+        self.backgroundColor = UIColor.clear
         self.layer.masksToBounds = true
     }
     
     typealias UserSettingClosure = (Void) -> Void
     
-    func setProfPic(user: PFUser, color: UIColor?, completion: UserSettingClosure?) {
+    func setProfPic(_ user: PFUser, color: UIColor?, completion: UserSettingClosure?) {
         self.layer.cornerRadius = 8.0
         self.layer.borderWidth = 2.0
         self.tintColor = AppConfiguration.navText
-        self.layer.borderColor = UIColor.clearColor().CGColor
-        self.contentMode = .ScaleAspectFill
-        self.backgroundColor = UIColor.clearColor()
-        self.layer.borderColor = color != nil ? color!.CGColor : UIColor.whiteColor().CGColor
+        self.layer.borderColor = UIColor.clear.cgColor
+        self.contentMode = .scaleAspectFill
+        self.backgroundColor = UIColor.clear
+        self.layer.borderColor = color != nil ? color!.cgColor : UIColor.white.cgColor
         self.layer.masksToBounds = true
         if user["picture"] != nil {
             self.file = user["picture"] as? PFFile
-            self.loadInBackground({ (image, error) in
+            self.load(inBackground: { (image, error) in
                 if image == nil {
                     if user["fullname"] != nil {
                         self.imageWithString(user["fullname"] as! String, color: .charcoalColor(), circular: false, fontAttributes: nil)
@@ -357,11 +381,11 @@ extension PFImageView {
             let userQuery = PFUser.query()
             userQuery?.cachePolicy = AppConfiguration.cachePolicy
             userQuery?.maxCacheAge = 3600
-            userQuery?.getObjectInBackgroundWithId(user.objectId!, block: { (object, error) in
+            userQuery?.getObjectInBackground(withId: user.objectId!, block: { (object, error) in
                 if error == nil {
                     if object!["picture"] != nil {
                         self.file = object!["picture"] as? PFFile
-                        self.loadInBackground({ (image, error) in
+                        self.load(inBackground: { (image, error) in
                             if image == nil {
                                 if object!["fullname"] != nil {
                                     self.imageWithString(object!["fullname"] as! String, color: .charcoalColor(), circular: false, fontAttributes: nil)
@@ -393,8 +417,8 @@ extension UILabel {
     
     func resizeFont() {
         if self.text != nil {
-            let textSize = self.text!.sizeWithAttributes([NSFontAttributeName:self.font!])
-            let widthCheck: CGFloat = (UIScreen.mainScreen().bounds.width <= 320) ? 201.5 : 256
+            let textSize = self.text!.size(attributes: [NSFontAttributeName:self.font!])
+            let widthCheck: CGFloat = (UIScreen.main.bounds.width <= 320) ? 201.5 : 256
             if widthCheck <= CGFloat(textSize.width) {
                 let fontSize = self.font.pointSize - 1.0
                 self.font = UIFont(name: self.font.fontName, size: fontSize)!
@@ -404,12 +428,12 @@ extension UILabel {
         }
     }
     
-    func Fullname(user: PFUser, color: UIColor?) {
-        self.font = (UIScreen.mainScreen().bounds.width <= 320) ? UIFont(name: "AmericanTypewriter", size: 25.0)! : UIFont(name: "AmericanTypewriter", size: 35.0)!
+    func Fullname(_ user: PFUser, color: UIColor?) {
+        self.font = (UIScreen.main.bounds.width <= 320) ? UIFont(name: "AmericanTypewriter", size: 25.0)! : UIFont(name: "AmericanTypewriter", size: 35.0)!
         if color != nil {
             self.textColor = color!
         } else {
-            self.textColor = UIColor.whiteColor()
+            self.textColor = UIColor.white
         }
         self.adjustsFontSizeToFitWidth = true
         if user["fullname"] != nil {
@@ -418,7 +442,7 @@ extension UILabel {
             let userQuery = PFUser.query()
             userQuery?.cachePolicy = AppConfiguration.cachePolicy
             userQuery?.maxCacheAge = 3600
-            userQuery?.getObjectInBackgroundWithId(user.objectId!, block: { (object, error) in
+            userQuery?.getObjectInBackground(withId: user.objectId!, block: { (object, error) in
                 if error == nil {
                     self.text = object!["fullname"] as? String ?? ""
                 }
@@ -427,30 +451,30 @@ extension UILabel {
     }
     
     
-    func evaporate(newText: String) {
+    func evaporate(_ newText: String) {
         let originalFrame = self.frame
-        UIView.animateWithDuration(0.5, delay: 0.0, options: UIViewAnimationOptions.CurveEaseIn, animations: {
+        UIView.animate(withDuration: 0.5, delay: 0.0, options: UIViewAnimationOptions.curveEaseIn, animations: {
             self.frame = self.frame.offsetBy(dx: 0, dy: -self.frame.height / 2)
             self.alpha = 0.0
         }) { (success) in
             self.frame = self.frame.offsetBy(dx: 0, dy: self.frame.height + (self.frame.height / 2))
             self.text = newText
-            UIView.animateWithDuration(0.5, delay: 0.0, options: UIViewAnimationOptions.CurveEaseIn, animations: {
+            UIView.animate(withDuration: 0.5, delay: 0.0, options: UIViewAnimationOptions.curveEaseIn, animations: {
                 self.frame = originalFrame
                 self.alpha = 1.0
                 }, completion: nil)
         }
     }
     
-    func evap(newText: String) {
+    func evap(_ newText: String) {
         let originalFrame = self.frame
-        UIView.animateWithDuration(0.5, delay: 0.0, options: UIViewAnimationOptions.CurveEaseIn, animations: {
+        UIView.animate(withDuration: 0.5, delay: 0.0, options: UIViewAnimationOptions.curveEaseIn, animations: {
             self.frame = self.frame.offsetBy(dx: 0, dy: -self.frame.height / 4)
             self.alpha = 0.0
         }) { (success) in
             self.frame = self.frame.offsetBy(dx: 0, dy: self.frame.height / 2)
             self.text = newText
-            UIView.animateWithDuration(0.5, delay: 0.0, options: UIViewAnimationOptions.CurveEaseIn, animations: {
+            UIView.animate(withDuration: 0.5, delay: 0.0, options: UIViewAnimationOptions.curveEaseIn, animations: {
                 self.frame = originalFrame
                 self.alpha = 1.0
                 }, completion: nil)
@@ -469,8 +493,8 @@ extension UILabel {
             layoutManager.addTextContainer(textContainer)
             var glyphRange = NSRange()
             let range: NSRange = NSMakeRange(char, 1)
-            layoutManager.characterRangeForGlyphRange(range, actualGlyphRange: &glyphRange)
-            rects.append(layoutManager.boundingRectForGlyphRange(glyphRange, inTextContainer: textContainer))
+            layoutManager.characterRange(forGlyphRange: range, actualGlyphRange: &glyphRange)
+            rects.append(layoutManager.boundingRect(forGlyphRange: glyphRange, in: textContainer))
         }
         return rects
     }
@@ -487,8 +511,8 @@ extension UILabel {
             layoutManager.addTextContainer(textContainer)
             var glyphRange = NSRange()
             let range: NSRange = NSMakeRange(char, 1)
-            layoutManager.characterRangeForGlyphRange(range, actualGlyphRange: &glyphRange)
-            rectWidth = rectWidth + layoutManager.boundingRectForGlyphRange(glyphRange, inTextContainer: textContainer).width
+            layoutManager.characterRange(forGlyphRange: range, actualGlyphRange: &glyphRange)
+            rectWidth = rectWidth + layoutManager.boundingRect(forGlyphRange: glyphRange, in: textContainer).width
         }
         return rectWidth
     }
@@ -564,7 +588,7 @@ extension PFUser {
 
     
     
-    func imageWithString(word: String, color: UIColor, bounds: CGRect) -> UIImage  {
+    func imageWithString(_ word: String, color: UIColor, bounds: CGRect) -> UIImage  {
         var imageViewString: String = ""
         let wordsArray = word.characters.split{$0 == " "}.map(String.init)
         for word in wordsArray {
@@ -576,16 +600,16 @@ extension PFUser {
         return imageSnapShotFromWords(imageViewString, color: nil, fontAttributes: nil, bounds: bounds)
     }
     
-    func imageSnapShotFromWords(snapShotString: String, color: UIColor?, fontAttributes: [String : AnyObject]?, bounds: CGRect) -> UIImage {
-        let attributes: [String : AnyObject] = [NSForegroundColorAttributeName : UIColor.whiteColor(),  NSFontAttributeName : UIFont(name: "AmericanTypewriter-Semibold", size:  bounds.width * 0.4)!]
-        let imageBackgroundColor: UIColor = UIColor.clearColor()
-        let scale = UIScreen.mainScreen().scale
+    func imageSnapShotFromWords(_ snapShotString: String, color: UIColor?, fontAttributes: [String : AnyObject]?, bounds: CGRect) -> UIImage {
+        let attributes: [String : AnyObject] = [NSForegroundColorAttributeName : UIColor.white,  NSFontAttributeName : UIFont(name: "AmericanTypewriter-Semibold", size:  bounds.width * 0.4)!]
+        let imageBackgroundColor: UIColor = UIColor.clear
+        let scale = UIScreen.main.scale
         UIGraphicsBeginImageContextWithOptions(bounds.size, false, scale)
         let context = UIGraphicsGetCurrentContext()
-        CGContextSetRGBFillColor(context!, imageBackgroundColor.red(), imageBackgroundColor.green(), imageBackgroundColor.blue(), 1.0)
-        CGContextFillRect(context!, CGRect(x: 0, y: 0, width: bounds.size.width, height: bounds.size.height))
-        let textSize = NSString(string: snapShotString).sizeWithAttributes(attributes)
-        NSString(string: snapShotString).drawInRect(CGRect(x: bounds.size.width/2 - textSize.width/2, y: bounds.size.height/2 - textSize.height/2, width: textSize.width, height: textSize.height), withAttributes: attributes)
+        context!.setFillColor(red: imageBackgroundColor.red(), green: imageBackgroundColor.green(), blue: imageBackgroundColor.blue(), alpha: 1.0)
+        context!.fill(CGRect(x: 0, y: 0, width: bounds.size.width, height: bounds.size.height))
+        let textSize = NSString(string: snapShotString).size(attributes: attributes)
+        NSString(string: snapShotString).draw(in: CGRect(x: bounds.size.width/2 - textSize.width/2, y: bounds.size.height/2 - textSize.height/2, width: textSize.width, height: textSize.height), withAttributes: attributes)
         let image: UIImage = UIGraphicsGetImageFromCurrentImageContext()!
         UIGraphicsEndImageContext()
         return image
@@ -593,11 +617,11 @@ extension PFUser {
     
     typealias GetPicClosure = (UIImage?) -> Void
     
-    func getProfPic(bounds: CGRect, completion: GetPicClosure?) {
+    func getProfPic(_ bounds: CGRect, completion: GetPicClosure?) {
         if completion != nil {
             if self["picture"] != nil {
                 let file = self["picture"] as! PFFile
-                file.getDataInBackgroundWithBlock({ (data, error) in
+                file.getDataInBackground(block: { (data, error) in
                     if error == nil {
                         if data != nil {
                             let image = UIImage(data: data!)
@@ -621,21 +645,21 @@ extension PFUser {
     
     typealias CreateSessionClosure = (Bool) -> Void
     
-    func createSession(completion: CreateSessionClosure) {
+    func createSession(_ completion: @escaping CreateSessionClosure) {
         let query = PFQuery(className: "ActiveSessions")
-        query.whereKey("caller", equalTo: PFUser.currentUser()!)
+        query.whereKey("caller", equalTo: PFUser.current()!)
         query.whereKey("receiver", equalTo: self)
-        query.getFirstObjectInBackgroundWithBlock { (object, error) in
+        query.getFirstObjectInBackground { (object, error) in
             if error == nil || object != nil {
                 AppConfiguration.activeSession = nil
                 completion(false)
             } else {
                 let activeSession:PFObject = PFObject(className: "ActiveSessions")
-                activeSession["caller"] = PFUser.currentUser()!
+                activeSession["caller"] = PFUser.current()!
                 activeSession["receiver"] = self
-                activeSession["callerTitle"] = "\(PFUser.currentUser()!.Fullname()) sent you a game request!"
+                activeSession["callerTitle"] = "\(PFUser.current()!.Fullname()) sent you a game request!"
                 //activeSession["Accepted"] = false
-                activeSession.saveInBackgroundWithBlock({(succeeded: Bool?, error: NSError?) -> Void in
+                activeSession.saveInBackground(block: {(succeeded: Bool?, error: Error?) -> Void in
                     if error == nil {
                         AppConfiguration.activeSession = activeSession
                         completion(true)
@@ -653,7 +677,7 @@ extension PFUser {
 
 class loadingLabel: LTMorphingLabel {
     
-    var loadingTimer: NSTimer?
+    var loadingTimer: Timer?
     
     lazy var fontSize: CGFloat? = {
         return self.font.pointSize
@@ -693,7 +717,7 @@ class loadingLabel: LTMorphingLabel {
     
     func resizeGameFont() {
         if self.text != nil {
-            let textSize = self.text!.sizeWithAttributes([NSFontAttributeName:self.font!])
+            let textSize = self.text!.size(attributes: [NSFontAttributeName:self.font!])
             if self.bounds.width <= textSize.width {
                 let fontSize = self.font.pointSize - 1.0
                 if fontSize > 13.0 {
@@ -705,7 +729,7 @@ class loadingLabel: LTMorphingLabel {
         }
     }
     
-    var index: NSIndexPath?
+    var index: IndexPath?
     var labelSet: Bool = false
     
     override func awakeFromNib() {
@@ -724,7 +748,7 @@ class loadingLabel: LTMorphingLabel {
     }
     
     func startLoading() {
-        loadingTimer = NSTimer.scheduledTimerWithTimeInterval(0.2, target: self, selector: #selector(self.loadingTextTimer(_:)), userInfo: nil, repeats: true)
+        loadingTimer = Timer.scheduledTimer(timeInterval: 0.2, target: self, selector: #selector(self.loadingTextTimer(_:)), userInfo: nil, repeats: true)
     }
     
     func stopLoading() {
@@ -739,7 +763,7 @@ class loadingLabel: LTMorphingLabel {
         stopLoading()
     }
 
-    func loadingTextTimer(sender: NSTimer) {
+    func loadingTextTimer(_ sender: Timer) {
         if text != nil {
             switch LoadingText {
             case "":
@@ -763,7 +787,7 @@ class loadingLabel: LTMorphingLabel {
             case "LOADING..":
                 LoadingText = "LOADING..."
                 if loadingTimer == nil {
-                    loadingTimer = NSTimer.scheduledTimerWithTimeInterval(0.2, target: self, selector: #selector(self.loadingTextTimer(_:)), userInfo: nil, repeats: true)
+                    loadingTimer = Timer.scheduledTimer(timeInterval: 0.2, target: self, selector: #selector(self.loadingTextTimer(_:)), userInfo: nil, repeats: true)
                     labelSet = false
                 }
             case "LOADING...":
@@ -818,7 +842,7 @@ class loadingLabel: LTMorphingLabel {
             case "Waiting for Opponent." :
                 LoadingText = "Waiting for Opponent.."
                 if loadingTimer == nil {
-                    loadingTimer = NSTimer.scheduledTimerWithTimeInterval(0.2, target: self, selector: #selector(self.loadingTextTimer(_:)), userInfo: nil, repeats: true)
+                    loadingTimer = Timer.scheduledTimer(timeInterval: 0.2, target: self, selector: #selector(self.loadingTextTimer(_:)), userInfo: nil, repeats: true)
                     labelSet = false
                 }
             case "Waiting for Opponent.." :
@@ -873,7 +897,7 @@ class loadingLabel: LTMorphingLabel {
             case "Your Invite Is Pending..":
                 LoadingText = "Your Invite Is Pending..."
                 if loadingTimer == nil {
-                    loadingTimer = NSTimer.scheduledTimerWithTimeInterval(0.2, target: self, selector: #selector(self.loadingTextTimer(_:)), userInfo: nil, repeats: true)
+                    loadingTimer = Timer.scheduledTimer(timeInterval: 0.2, target: self, selector: #selector(self.loadingTextTimer(_:)), userInfo: nil, repeats: true)
                     labelSet = false
                 }
             case "Your Invite Is Pending...":
@@ -933,7 +957,7 @@ class loadingLabel: LTMorphingLabel {
                 LoadingText = "Sent You A Game Request!"
             case "Sent You A Game Request!":
                 if loadingTimer == nil {
-                    loadingTimer = NSTimer.scheduledTimerWithTimeInterval(0.2, target: self, selector: #selector(self.loadingTextTimer(_:)), userInfo: nil, repeats: true)
+                    loadingTimer = Timer.scheduledTimer(timeInterval: 0.2, target: self, selector: #selector(self.loadingTextTimer(_:)), userInfo: nil, repeats: true)
                     labelSet = false
                 }
                 LoadingText = "Sent You A Game Request! "
@@ -954,12 +978,12 @@ class loadingLabel: LTMorphingLabel {
         }
     }
     
-    override func Fullname(user: PFUser, color: UIColor?) {
-        self.font = (UIScreen.mainScreen().bounds.width <= 320) ? UIFont(name: "AmericanTypewriter", size: 25.0)! : UIFont(name: "AmericanTypewriter", size: 35.0)!
+    override func Fullname(_ user: PFUser, color: UIColor?) {
+        self.font = (UIScreen.main.bounds.width <= 320) ? UIFont(name: "AmericanTypewriter", size: 25.0)! : UIFont(name: "AmericanTypewriter", size: 35.0)!
         if color != nil {
             self.textColor = color!
         } else {
-            self.textColor = UIColor.whiteColor()
+            self.textColor = UIColor.white
         }
         self.adjustsFontSizeToFitWidth = true
         if user["fullname"] != nil {
@@ -969,7 +993,7 @@ class loadingLabel: LTMorphingLabel {
             let userQuery = PFUser.query()
             userQuery?.cachePolicy = AppConfiguration.cachePolicy
             userQuery?.maxCacheAge = 3600
-            userQuery?.getObjectInBackgroundWithId(user.objectId!, block: { (object, error) in
+            userQuery?.getObjectInBackground(withId: user.objectId!, block: { (object, error) in
                 if error == nil {
                     self.text = object!["fullname"] as? String ?? ""
                     self.resizeFont()
@@ -984,7 +1008,7 @@ class loadingLabel: LTMorphingLabel {
 class BadgeView: UIView {
     
     var valueLabel: UILabel = UILabel()
-    var formatter: NSNumberFormatter = NSNumberFormatter()
+    var formatter: NumberFormatter = NumberFormatter()
     
     let kBadgeViewMinimumSize: CGFloat = 20.0
     let kBadgeViewPadding: CGFloat = 5.0
@@ -1006,7 +1030,7 @@ class BadgeView: UIView {
                 self.badgeNumber = newVal
             }
             if self.badgeNumber > 0 {
-                self.valueLabel.text = self.formatter.stringFromNumber(self.badgeNumber)!
+                self.valueLabel.text = self.formatter.string(from: NSNumber(integerLiteral: self.badgeNumber))!
             }
             self.updateState()
         }
@@ -1047,12 +1071,12 @@ class BadgeView: UIView {
     
     func setupDefaultAppearance() {
         self.clipsToBounds = true
-        self.hidden = true
-        self.backgroundColor = UIColor.redColor()
-        self.valueLabel.textAlignment = .Center
-        self.valueLabel.backgroundColor = UIColor.clearColor()
+        self.isHidden = true
+        self.backgroundColor = UIColor.red
+        self.valueLabel.textAlignment = .center
+        self.valueLabel.backgroundColor = UIColor.clear
         self.addSubview(self.valueLabel)
-        self.textColor = UIColor.whiteColor()
+        self.textColor = UIColor.white
         self.font = UIFont(name: "AmericanTypewriter", size: 12)!
         self.topOffset = 0.0
         self.rightOffset = 0.0
@@ -1067,14 +1091,14 @@ class BadgeView: UIView {
     
     func layoutBadgeSubviews() {
         self.valueLabel.sizeToFit()
-        let badgeLabelWidth: CGFloat = CGRectGetWidth(self.valueLabel.frame)
-        let badgeLabelHeight: CGFloat = CGRectGetHeight(self.valueLabel.frame)
+        let badgeLabelWidth: CGFloat = self.valueLabel.frame.width
+        let badgeLabelHeight: CGFloat = self.valueLabel.frame.height
         let height: CGFloat = max(kBadgeViewMinimumSize, badgeLabelHeight + kBadgeViewPadding)
         let width: CGFloat = max(height, badgeLabelWidth + (2 * kBadgeViewPadding))
-        self.frame = CGRect(x: CGRectGetWidth(self.superview!.frame) - (width / 2.0) - self.rightOffset, y: -(height / 2.0) + self.topOffset, width: width, height: height)
+        self.frame = CGRect(x: self.superview!.frame.width - (width / 2.0) - self.rightOffset, y: -(height / 2.0) + self.topOffset, width: width, height: height)
         self.layer.cornerRadius = height / 2.0
         self.layer.borderWidth = 2.0
-        self.layer.borderColor = UIColor.whiteColor().CGColor
+        self.layer.borderColor = UIColor.white.cgColor
         self.valueLabel.frame = CGRect(x: (width / 2.0) - (badgeLabelWidth / 2.0), y: (height / 2.0) - (badgeLabelHeight / 2.0), width: badgeLabelWidth, height: badgeLabelHeight)
     }
     
@@ -1092,11 +1116,11 @@ class BadgeView: UIView {
     
     func updateState() {
         // If we're currently hidden and we should be visible, show ourself.
-        if self.hidden && self.badgeValue > 0 {
+        if self.isHidden && self.badgeValue > 0 {
             self.layoutBadgeSubviews()
             self.show()
         }
-        else if !self.hidden && self.badgeValue <= 0 {
+        else if !self.isHidden && self.badgeValue <= 0 {
             self.hide()
         }
         else {
@@ -1128,7 +1152,7 @@ class BadgeView: UIView {
             }
             animator.startAnimation()
         } else {*/
-            self.hidden = false
+            self.isHidden = false
         //}
     }
     
@@ -1156,22 +1180,22 @@ class BadgeView: UIView {
             }
             animator.startAnimation()
         } else {*/
-            self.hidden = true
+            self.isHidden = true
         //}
     }
 }
 
 // MARK: - MIBadgeButton
 
-public class MIBadgeButton: UIButton {
+open class MIBadgeButton: UIButton {
     
-    var formatter: NSNumberFormatter = NSNumberFormatter()
+    var formatter: NumberFormatter = NumberFormatter()
     
-    public var badgeLabel: UILabel
+    open var badgeLabel: UILabel
     
-    private var badgeNumber: Int = 0
+    fileprivate var badgeNumber: Int = 0
     
-    public var badgeString: Int {
+    open var badgeString: Int {
         get {
             return self.badgeNumber
         }
@@ -1192,26 +1216,26 @@ public class MIBadgeButton: UIButton {
             if self.badgeNumber > 999 {
                 self.setupBadgeViewWithString("999+")
             } else if self.badgeNumber > 0 {
-                self.setupBadgeViewWithString(self.formatter.stringFromNumber(self.badgeNumber)!)
+                self.setupBadgeViewWithString(self.formatter.string(from: NSNumber(integerLiteral: self.badgeNumber))!)
             } else {
                 self.hide()
             }
         }
     }
     
-    public var badgeEdgeInsets: UIEdgeInsets? {
+    open var badgeEdgeInsets: UIEdgeInsets? {
         didSet {
             setupBadgeViewWithString("\(badgeString)")
         }
     }
     
-    public var badgeBackgroundColor: UIColor? {
+    open var badgeBackgroundColor: UIColor? {
         didSet {
             badgeLabel.backgroundColor = badgeBackgroundColor
         }
     }
     
-    public var badgeTextColor: UIColor? {
+    open var badgeTextColor: UIColor? {
         didSet {
             badgeLabel.textColor = badgeTextColor
         }
@@ -1233,7 +1257,7 @@ public class MIBadgeButton: UIButton {
         setupBadgeViewWithString("0")
     }
     
-    public func initWithFrame(frame: CGRect, withBadgeString badgeString: String, withBadgeInsets badgeInsets: UIEdgeInsets) -> AnyObject {
+    open func initWithFrame(_ frame: CGRect, withBadgeString badgeString: String, withBadgeInsets badgeInsets: UIEdgeInsets) -> AnyObject {
         badgeLabel = UILabel()
         badgeEdgeInsets = badgeInsets
         self.formatter.groupingSeparator = ","
@@ -1242,24 +1266,24 @@ public class MIBadgeButton: UIButton {
         return self
     }
     
-    public func increment() {
+    open func increment() {
         badgeString += 1
     }
     
     // MARK: - Visibility
     
     func show() {
-        self.badgeLabel.hidden = false
+        self.badgeLabel.isHidden = false
         let SpringVelocity: CGFloat = 8.0
         let Damping: CGFloat = 0.2
         let Duration: Double = 0.15
-        UIView.animateWithDuration(Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.CurveLinear, animations: {
+        UIView.animate(withDuration: Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.curveLinear, animations: {
             self.badgeLabel.frame = self.badgeLabel.frame.offsetBy(dx: 0, dy: -1)
             }, completion: { _ in
-                UIView.animateWithDuration(Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.CurveLinear, animations: {
+                UIView.animate(withDuration: Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.curveLinear, animations: {
                     self.badgeLabel.frame = self.badgeLabel.frame.offsetBy(dx: 0, dy: 2)
                     }, completion: { _ in
-                        UIView.animateWithDuration(Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.CurveLinear, animations: {
+                        UIView.animate(withDuration: Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.curveLinear, animations: {
                             self.badgeLabel.frame = self.badgeLabel.frame.offsetBy(dx: 0, dy: -1)
                             }, completion: nil)
                 })
@@ -1270,27 +1294,27 @@ public class MIBadgeButton: UIButton {
         let SpringVelocity: CGFloat = 8.0
         let Damping: CGFloat = 0.2
         let Duration: Double = 0.05
-        UIView.animateWithDuration(Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.CurveLinear, animations: {
+        UIView.animate(withDuration: Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.curveLinear, animations: {
             self.badgeLabel.frame = self.badgeLabel.frame.offsetBy(dx: 0, dy: -1)
             }, completion: { _ in
-                UIView.animateWithDuration(Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.CurveLinear, animations: {
+                UIView.animate(withDuration: Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.curveLinear, animations: {
                     self.badgeLabel.frame = self.badgeLabel.frame.offsetBy(dx: 0, dy: 2)
                     }, completion: { _ in
-                        UIView.animateWithDuration(Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.CurveLinear, animations: {
+                        UIView.animate(withDuration: Duration, delay: 0.0, usingSpringWithDamping: Damping, initialSpringVelocity: SpringVelocity, options: UIViewAnimationOptions.curveLinear, animations: {
                             self.badgeLabel.frame = self.badgeLabel.frame.offsetBy(dx: 0, dy: -1)
                             }, completion: { _ in
-                                self.badgeLabel.hidden = true
+                                self.badgeLabel.isHidden = true
                         })
                 })
         })
     }
     
-    private func setupBadgeViewWithString(badgeText: String?) {
+    fileprivate func setupBadgeViewWithString(_ badgeText: String?) {
         badgeLabel.clipsToBounds = true
         badgeLabel.text = badgeText
-        badgeLabel.hidden = true
+        badgeLabel.isHidden = true
         badgeLabel.font = UIFont(name: "AmericanTypewriter-Semibold", size: 12)!
-        badgeLabel.textAlignment = .Center
+        badgeLabel.textAlignment = .center
         badgeLabel.sizeToFit()
         let badgeSize = badgeLabel.frame.size
         let height = max(20, Double(badgeSize.height) + 5.0)
@@ -1303,22 +1327,22 @@ public class MIBadgeButton: UIButton {
             let y = -(Double(badgeSize.height) / 2) - 10 + vertical!
             badgeLabel.frame = CGRect(x: x, y: y, width: width, height: height)
         } else {
-            let x = CGRectGetWidth(self.frame) - CGFloat((width / 2.0))
+            let x = self.frame.width - CGFloat((width / 2.0))
             let y = CGFloat(-(height / 2.0))
-            badgeLabel.frame = CGRectMake(x, y, CGFloat(width), CGFloat(height))
+            badgeLabel.frame = CGRect(x: x, y: y, width: CGFloat(width), height: CGFloat(height))
         }
         setupBadgeStyle()
         addSubview(badgeLabel)
         badgeLabel.text == "0" ? hide() : show()
     }
     
-    private func setupBadgeStyle() {
-        badgeLabel.textAlignment = .Center
+    fileprivate func setupBadgeStyle() {
+        badgeLabel.textAlignment = .center
         badgeLabel.backgroundColor = badgeBackgroundColor
         badgeLabel.textColor = badgeTextColor
         badgeLabel.layer.cornerRadius = badgeLabel.bounds.size.height / 2
         badgeLabel.layer.borderWidth = 1.0
-        badgeLabel.layer.borderColor = UIColor.whiteColor().CGColor
+        badgeLabel.layer.borderColor = UIColor.white.cgColor
     }
 }
 
@@ -1327,7 +1351,7 @@ public class MIBadgeButton: UIButton {
 
 @IBDesignable class ImageTextField: UITextField {
     
-    private var ImgIcon: UIImageView?
+    fileprivate var ImgIcon: UIImageView?
     
     @IBInspectable var errorEntry: Bool = false {
         didSet {
@@ -1341,7 +1365,7 @@ public class MIBadgeButton: UIButton {
         }
     }
 
-    @IBInspectable var lineColor: UIColor = UIColor.blackColor() {
+    @IBInspectable var lineColor: UIColor = UIColor.black {
         didSet {
             self.setNeedsDisplay()
         }
@@ -1353,7 +1377,7 @@ public class MIBadgeButton: UIButton {
         }
     }
 
-    @IBInspectable var errorColor: UIColor = UIColor.redColor() {
+    @IBInspectable var errorColor: UIColor = UIColor.red {
         didSet {
             self.setNeedsDisplay()
         }
@@ -1371,15 +1395,15 @@ public class MIBadgeButton: UIButton {
         }
     }
 
-    override func textRectForBounds(bounds: CGRect) -> CGRect {
+    override func textRect(forBounds bounds: CGRect) -> CGRect {
         return self.newBounds(bounds)
     }
 
-    override func editingRectForBounds(bounds: CGRect) -> CGRect {
+    override func editingRect(forBounds bounds: CGRect) -> CGRect {
         return self.newBounds(bounds)
     }
     
-    private func newBounds(bounds: CGRect) -> CGRect {
+    fileprivate func newBounds(_ bounds: CGRect) -> CGRect {
         var newBounds = bounds
         newBounds.origin.x += CGFloat(leftTextPedding) + CGFloat(imageWidth)
         return newBounds
@@ -1392,166 +1416,166 @@ public class MIBadgeButton: UIButton {
         //setting left image
         if (txtImage != nil) {
             let imgView = UIImageView(image: txtImage)
-            imgView.frame = CGRectMake(0, 0, CGFloat(imageWidth), self.frame.height)
-            imgView.contentMode = .Center
-            self.leftViewMode = UITextFieldViewMode.Always
+            imgView.frame = CGRect(x: 0, y: 0, width: CGFloat(imageWidth), height: self.frame.height)
+            imgView.contentMode = .center
+            self.leftViewMode = UITextFieldViewMode.always
             self.leftView = imgView
         }
     }
     
-    override func drawRect(rect: CGRect) {
+    override func draw(_ rect: CGRect) {
         let height = self.bounds.height
         // get the current drawing context
         let context = UIGraphicsGetCurrentContext()
         
         // set the line color and width
         if errorEntry {
-            CGContextSetStrokeColorWithColor(context!, errorColor.CGColor)
-            CGContextSetLineWidth(context!, 1.5)
+            context!.setStrokeColor(errorColor.cgColor)
+            context!.setLineWidth(1.5)
         } else {
-            CGContextSetStrokeColorWithColor(context!, lineColor.CGColor)
-            CGContextSetLineWidth(context!, 0.5)
+            context!.setStrokeColor(lineColor.cgColor)
+            context!.setLineWidth(0.5)
         }
         // start a new Path
-        CGContextBeginPath(context!)
-        CGContextMoveToPoint(context!, self.bounds.origin.x, height - 0.5)
-        CGContextAddLineToPoint(context!, self.bounds.size.width, height - 0.5)
+        context!.beginPath()
+        context!.move(to: CGPoint(x: self.bounds.origin.x, y: height - 0.5))
+        context!.addLine(to: CGPoint(x: self.bounds.size.width, y: height - 0.5))
         // close and stroke (draw) it
-        CGContextClosePath(context!)
-        CGContextStrokePath(context!)
+        context!.closePath()
+        context!.strokePath()
         //Setting custom placeholder color
         if let strPlaceHolder: String = self.placeholder {
             self.attributedPlaceholder = NSAttributedString(string:strPlaceHolder, attributes:[NSForegroundColorAttributeName:placeHolerColor])
         }
     }
     
-    override func leftViewRectForBounds(bounds: CGRect) -> CGRect {
-        return CGRectMake(0, 0, CGFloat(imageWidth), self.frame.height)
+    override func leftViewRect(forBounds bounds: CGRect) -> CGRect {
+        return CGRect(x: 0, y: 0, width: CGFloat(imageWidth), height: self.frame.height)
     }
 }
 
 // MARK: - CLLocationCoordinate2D
 
 extension CLLocationCoordinate2D {
-    func isEqualTo(location: CLLocationCoordinate2D) -> Bool {
+    func isEqualTo(_ location: CLLocationCoordinate2D) -> Bool {
         return (self.latitude == location.latitude && self.longitude == location.longitude)
     }
 }
 
 // MARK: - NSDate
 
-extension NSDate : Comparable {}
+/*extension NSDate : Comparable {}
 
 public func ==(lhs: NSDate, rhs: NSDate) -> Bool {
-    return lhs === rhs || lhs.compare(rhs) == .OrderedSame
+    return lhs === rhs || lhs.compare(rhs) == .orderedSame
 }
 
-public func <(lhs: NSDate, rhs: NSDate) -> Bool {
-    return lhs.compare(rhs) == .OrderedAscending
+public func <(lhs: Date, rhs: Date) -> Bool {
+    return lhs.compare(rhs) == .orderedAscending
 }
 
-public func >(lhs: NSDate, rhs: NSDate) -> Bool {
-    return lhs.compare(rhs) == .OrderedDescending
-}
+public func >(lhs: Date, rhs: Date) -> Bool {
+    return lhs.compare(rhs) == .orderedDescending
+}*/
 
 
-extension NSDate {
+extension Date {
     
     /// Returns the amount of years from another date
-    func years(from date: NSDate) -> CGFloat {
-        return CGFloat(NSCalendar.currentCalendar().components(NSCalendarUnit.Year, fromDate: date, toDate: self, options: []).year) ?? 0
+    func years(from date: Date) -> CGFloat {
+        return CGFloat((Calendar.current as NSCalendar).components(NSCalendar.Unit.year, from: date, to: self, options: []).year!) ?? 0
     }
     
     /// Returns the amount of months from another date
-    func months(from date: NSDate) -> CGFloat {
-        return CGFloat(NSCalendar.currentCalendar().components(NSCalendarUnit.Month, fromDate: date, toDate: self, options: []).month) ?? 0
+    func months(from date: Date) -> CGFloat {
+        return CGFloat((Calendar.current as NSCalendar).components(NSCalendar.Unit.month, from: date, to: self, options: []).month!) ?? 0
     }
     
     /// Returns the amount of weeks from another date
-    func weeks(from date: NSDate) -> CGFloat {
-        if CGFloat(self.timeIntervalSinceDate(date) / 604800) < 0 {
-            return CGFloat(self.timeIntervalSinceDate(date) / 604800) * -1
+    func weeks(from date: Date) -> CGFloat {
+        if CGFloat(self.timeIntervalSince(date) / 604800) < 0 {
+            return CGFloat(self.timeIntervalSince(date) / 604800) * -1
         }
-        return CGFloat(self.timeIntervalSinceDate(date) / 604800)
+        return CGFloat(self.timeIntervalSince(date) / 604800)
     }
     
     /// Returns the amount of days from another date
-    func days(from date: NSDate) -> CGFloat {
-        if CGFloat(self.timeIntervalSinceDate(date) / 86400) < 0 {
-            return CGFloat(self.timeIntervalSinceDate(date) / 86400) * -1
+    func days(from date: Date) -> CGFloat {
+        if CGFloat(self.timeIntervalSince(date) / 86400) < 0 {
+            return CGFloat(self.timeIntervalSince(date) / 86400) * -1
         }
-        return CGFloat(self.timeIntervalSinceDate(date) / 86400)
+        return CGFloat(self.timeIntervalSince(date) / 86400)
     }
     
     /// Returns the amount of hours from another date
-    func hours(from date: NSDate) -> CGFloat {
-        if CGFloat(self.timeIntervalSinceDate(date) / 3600) < 0 {
-            return CGFloat(self.timeIntervalSinceDate(date) / 3600) * -1
+    func hours(from date: Date) -> CGFloat {
+        if CGFloat(self.timeIntervalSince(date) / 3600) < 0 {
+            return CGFloat(self.timeIntervalSince(date) / 3600) * -1
         }
-        return CGFloat(self.timeIntervalSinceDate(date) / 3600)
+        return CGFloat(self.timeIntervalSince(date) / 3600)
     }
     
     /// Returns the amount of minutes from another date
-    func minutes(from date: NSDate) -> CGFloat {
-        if CGFloat(self.timeIntervalSinceDate(date) / 60) < 0 {
-            return CGFloat(self.timeIntervalSinceDate(date) / 60) * -1
+    func minutes(from date: Date) -> CGFloat {
+        if CGFloat(self.timeIntervalSince(date) / 60) < 0 {
+            return CGFloat(self.timeIntervalSince(date) / 60) * -1
         }
-        return CGFloat(self.timeIntervalSinceDate(date) / 60)
+        return CGFloat(self.timeIntervalSince(date) / 60)
     }
     
     /// Returns the amount of seconds from another date
-    func seconds(from date: NSDate) -> CGFloat {
-        if self.timeIntervalSinceDate(date) < 0 {
-            return CGFloat(self.timeIntervalSinceDate(date)) * -1
+    func seconds(from date: Date) -> CGFloat {
+        if self.timeIntervalSince(date) < 0 {
+            return CGFloat(self.timeIntervalSince(date)) * -1
         }
-        return CGFloat(self.timeIntervalSinceDate(date))
+        return CGFloat(self.timeIntervalSince(date))
     }
     
-    func isGreaterThanDate(dateToCompare: NSDate) -> Bool {
+    func isGreaterThanDate(_ dateToCompare: Date) -> Bool {
         var isGreater = false
-        if self.compare(dateToCompare) == NSComparisonResult.OrderedDescending {
+        if self.compare(dateToCompare) == ComparisonResult.orderedDescending {
             isGreater = true
         }
         return isGreater
     }
 
-    func isLessThanDate(dateToCompare: NSDate) -> Bool {
+    func isLessThanDate(_ dateToCompare: Date) -> Bool {
         var isLess = false
-        if self.compare(dateToCompare) == NSComparisonResult.OrderedAscending {
+        if self.compare(dateToCompare) == ComparisonResult.orderedAscending {
             isLess = true
         }
         return isLess
     }
 
-    func equalToDate(dateToCompare: NSDate) -> Bool {
+    func equalToDate(_ dateToCompare: Date) -> Bool {
         var isEqualTo = false
-        if self.compare(dateToCompare) == NSComparisonResult.OrderedSame {
+        if self.compare(dateToCompare) == ComparisonResult.orderedSame {
             isEqualTo = true
         }
         return isEqualTo
     }
 
     var formatted:String {
-        let formatter = NSDateFormatter()
-        formatter.AMSymbol = "AM"
-        formatter.PMSymbol = "PM"
-        let cal: NSCalendar = NSCalendar.currentCalendar()
+        let formatter = DateFormatter()
+        formatter.amSymbol = "AM"
+        formatter.pmSymbol = "PM"
+        let cal: Calendar = Calendar.current
         if cal.isDateInToday(self) {
             formatter.dateFormat = "h"
         } else {
             formatter.dateFormat = "M/d h"
         }
-        return formatter.stringFromDate(self)
+        return formatter.string(from: self)
     }
 
-    func formattedWith(format:String) -> String {
-        let formatter = NSDateFormatter()
+    func formattedWith(_ format:String) -> String {
+        let formatter = DateFormatter()
         formatter.dateFormat = format
-        return formatter.stringFromDate(self)
+        return formatter.string(from: self)
     }
     
-    class func daysAgo(days: Int) -> NSDate {
-        return NSDate(timeIntervalSinceNow: NSTimeInterval(days * 86400))
+    static func daysAgo(_ days: Int) -> Date {
+        return Date(timeIntervalSinceNow: TimeInterval(days * 86400))
     }
 }
 
@@ -1564,12 +1588,12 @@ extension UITableViewCell {
         let gradientLayer = CAGradientLayer()
         let frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
         gradientLayer.frame = frame
-        let color1 = UIColor.charcoalColor().changeAlpha(0.4).CGColor as CGColorRef
-        let color2 = UIColor.charcoalColor().lightenedColor(0.2).changeAlpha(0.4).CGColor as CGColorRef
-        let color3 = UIColor.charcoalColor().lightenedColor(0.5).changeAlpha(0.4).CGColor as CGColorRef
+        let color1 = UIColor.charcoalColor().changeAlpha(0.4).cgColor as CGColor
+        let color2 = UIColor.charcoalColor().lightenedColor(0.2).changeAlpha(0.4).cgColor as CGColor
+        let color3 = UIColor.charcoalColor().lightenedColor(0.5).changeAlpha(0.4).cgColor as CGColor
         gradientLayer.colors = [color1, color2, color3, color2, color1]
         gradientLayer.locations = [0.0, 0.15, 0.5, 0.85, 1.0]
-        self.layer.insertSublayer(gradientLayer, atIndex: 0)
+        self.layer.insertSublayer(gradientLayer, at: 0)
     }
 }
 
@@ -1580,11 +1604,11 @@ extension UITextField {
     func addDoneButton() {
         let toolBar = UIToolbar()
         toolBar.sizeToFit()
-        let spaceButton = UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil)
-        let doneButton : UIBarButtonItem = UIBarButtonItem(title: "Done", style: .Plain, target: self, action: #selector(self.PressedDone))
-        doneButton.tintColor = UIColor.blackColor()
+        let spaceButton = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let doneButton : UIBarButtonItem = UIBarButtonItem(title: "Done", style: .plain, target: self, action: #selector(self.PressedDone))
+        doneButton.tintColor = UIColor.black
         toolBar.setItems([spaceButton, doneButton], animated: false)
-        toolBar.userInteractionEnabled = true
+        toolBar.isUserInteractionEnabled = true
         self.inputAccessoryView = toolBar
     }
     
@@ -1597,11 +1621,11 @@ extension UITextView {
     func addDoneButton() {
         let toolBar = UIToolbar()
         toolBar.sizeToFit()
-        let spaceButton = UIBarButtonItem(barButtonSystemItem: .FlexibleSpace, target: nil, action: nil)
-        let doneButton : UIBarButtonItem = UIBarButtonItem(title: "Done", style: .Plain, target: self, action: #selector(self.PressedDone))
-        doneButton.tintColor = UIColor.blackColor()
+        let spaceButton = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let doneButton : UIBarButtonItem = UIBarButtonItem(title: "Done", style: .plain, target: self, action: #selector(self.PressedDone))
+        doneButton.tintColor = UIColor.black
         toolBar.setItems([spaceButton, doneButton], animated: false)
-        toolBar.userInteractionEnabled = true
+        toolBar.isUserInteractionEnabled = true
         self.inputAccessoryView = toolBar
     }
     
@@ -1616,12 +1640,12 @@ extension UIView {
         var rockframe: CGRect!
         var paperframe: CGRect!
         var scissorsframe: CGRect!
-        if UIScreen.mainScreen().bounds.size.height >= 736 {
+        if UIScreen.main.bounds.size.height >= 736 {
             let widther: CGFloat = (self.bounds.width / 3.0) - 6.0
             rockframe = CGRect(x: 3, y: self.bounds.height - (widther + 5), width: widther, height: widther)
             paperframe = CGRect(x: rockframe.maxX + 6, y: rockframe.minY, width: widther, height: widther)
             scissorsframe = CGRect(x: paperframe.maxX + 6, y: rockframe.minY, width: widther, height: widther)
-        } else if UIScreen.mainScreen().bounds.size.height < 736 && UIScreen.mainScreen().bounds.size.height >= 667 {
+        } else if UIScreen.main.bounds.size.height < 736 && UIScreen.main.bounds.size.height >= 667 {
             let widther: CGFloat = (self.bounds.width / 3.0) - 6.0
             rockframe = CGRect(x: 3, y: self.bounds.height - (widther + 5), width: widther, height: widther)
             paperframe = CGRect(x: rockframe.maxX + 6, y: rockframe.minY, width: widther, height: widther)
@@ -1635,7 +1659,7 @@ extension UIView {
         return [rockframe,paperframe,scissorsframe]
     }
     
-    func addblur(color: UIColor) {
+    func addblur(_ color: UIColor) {
         let visualEffectView = VisualEffectView(frame: self.frame)
         visualEffectView.colorTint = color
         visualEffectView.colorTintAlpha = 0.9
@@ -1652,7 +1676,7 @@ extension UIView {
         }
     }
     
-    func addBlur(color: UIColor, below: UIView) {
+    func addBlur(_ color: UIColor, below: UIView) {
         let visualEffectView = VisualEffectView(frame: self.frame)
         visualEffectView.colorTint = color
         visualEffectView.colorTintAlpha = 0.9
@@ -1663,10 +1687,10 @@ extension UIView {
     
     func addborder() {
         self.layer.cornerRadius = 8.0
-        self.layer.borderColor = UIColor.whiteColor().CGColor
+        self.layer.borderColor = UIColor.white.cgColor
         self.layer.borderWidth = 2.0
         self.layer.masksToBounds = true
-        self.autoresizingMask = UIViewAutoresizing.FlexibleWidth
+        self.autoresizingMask = UIViewAutoresizing.flexibleWidth
     }
     
     func removeGestures() {
@@ -1697,10 +1721,10 @@ extension UIView {
     
     @IBInspectable var borderColor: UIColor {
         get {
-            return layer.borderColor != nil ? UIColor(CGColor: layer.borderColor!) : UIColor.clearColor()
+            return layer.borderColor != nil ? UIColor(cgColor: layer.borderColor!) : UIColor.clear
         }
         set {
-            layer.borderColor = newValue.CGColor
+            layer.borderColor = newValue.cgColor
             layer.masksToBounds = true
         }
     }
@@ -1709,17 +1733,17 @@ extension UIView {
         let gradientLayer = CAGradientLayer()
         let frame = CGRect(x: 0, y: 0, width: self.frame.width, height: self.frame.height)
         gradientLayer.frame = frame
-        let color1 = AppConfiguration.startingColor.lightenedColor(0.4).CGColor
-        let color2 = AppConfiguration.startingColor.darkenedColor(0.2).CGColor
-        let color3 = AppConfiguration.startingColor.darkenedColor(0.4).CGColor
+        let color1 = AppConfiguration.startingColor.lightenedColor(0.4).cgColor
+        let color2 = AppConfiguration.startingColor.darkenedColor(0.2).cgColor
+        let color3 = AppConfiguration.startingColor.darkenedColor(0.4).cgColor
         gradientLayer.colors = [color1, color2, color3, color2, color1]
         gradientLayer.locations = [0.0, 0.3, 0.5, 0.7, 1.0]
-        self.layer.insertSublayer(gradientLayer, atIndex: 0)
+        self.layer.insertSublayer(gradientLayer, at: 0)
     }
     
     func addBlur() {
         let visualEffectView = VisualEffectView(frame: self.frame)
-        visualEffectView.colorTint = .whiteColor()
+        visualEffectView.colorTint = .white
         visualEffectView.colorTintAlpha = 0.2
         visualEffectView.blurRadius = 10
         visualEffectView.scale = 1
@@ -1728,14 +1752,14 @@ extension UIView {
     
     typealias SpinClosure = (Void) -> Void
     
-    func spin(complete: SpinClosure?) {
+    func spin(_ complete: SpinClosure?) {
         let rotationAnimation:CABasicAnimation = CABasicAnimation(keyPath: "transform.rotation.z")
-        rotationAnimation.toValue = -M_PI
+        rotationAnimation.toValue = -Double.pi
         rotationAnimation.duration = 0.5
         rotationAnimation.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)
-        layer.addAnimation(rotationAnimation, forKey: "rotationAnimation")
-        UIView.animateWithDuration(0.5, delay: 0.1, options: UIViewAnimationOptions.CurveEaseOut, animations: {
-            inviteRequestsbutton.tintColor = inviteRequestsbutton.tintColor == UIColor.whiteColor() ? UIColor.waveColor() : UIColor.whiteColor()
+        layer.add(rotationAnimation, forKey: "rotationAnimation")
+        UIView.animate(withDuration: 0.5, delay: 0.1, options: UIViewAnimationOptions.curveEaseOut, animations: {
+            inviteRequestsbutton.tintColor = inviteRequestsbutton.tintColor == UIColor.white ? UIColor.waveColor() : UIColor.white
             }, completion: {_ in
                 if complete != nil {
                     complete!()
@@ -1758,7 +1782,7 @@ extension UIView {
 
 class GradientButton: UIButton {
     
-    private let Grads: [String: [UIColor]] = [
+    fileprivate let Grads: [String: [UIColor]] = [
         "blackGrad": [UIColor(red: 0.154, green: 0.154, blue: 0.154, alpha: 1.0),UIColor(red: 0.307, green: 0.307, blue: 0.307, alpha: 1.0),UIColor(red: 0.166, green: 0.166, blue: 0.166, alpha: 1.0),UIColor(red: 0.118, green: 0.118, blue: 0.118, alpha: 1.0)],
         "greenGrad" : [UIColor(red: 0.15, green: 0.667, blue: 0.152, alpha: 1.0),UIColor(red: 0.566, green: 0.841, blue: 0.566, alpha: 1.0),UIColor(red: 0.341, green: 0.75, blue: 0.345, alpha: 1.0),UIColor(red: 0.0, green: 0.592, blue: 0.0, alpha: 1.0),UIColor(red: 0.0, green: 0.592, blue: 0.0, alpha: 1.0)],
         "redGrad" : [UIColor(red: 0.667, green: 0.15, blue: 0.152, alpha: 1.0),UIColor(red: 0.841, green: 0.566, blue: 0.566, alpha: 1.0),UIColor(red: 0.75, green: 0.341, blue: 0.345, alpha: 1.0),UIColor(red: 0.592, green: 0.0, blue: 0.0, alpha: 1.0),UIColor(red: 0.592, green: 0.0, blue: 0.0, alpha: 1.0)],
@@ -1780,30 +1804,30 @@ class GradientButton: UIButton {
             setNeedsLayout()
         }
     }
-    private var selectedColors: String = "blackGrad" {
+    fileprivate var selectedColors: String = "blackGrad" {
         didSet {
             normalGradients = Grads[selectedColors]!
         }
     }
 
-    func toggleAnimation(completion: GradientClosure) {
-        self.selected = !self.selected
+    func toggleAnimation(_ completion: @escaping GradientClosure) {
+        self.isSelected = !self.isSelected
         self.delay(0.2, closure: {
-            self.selected = !self.selected
+            self.isSelected = !self.isSelected
             completion()
         })
     }
     
-    override var selected: Bool {
+    override var isSelected: Bool {
         didSet {
             var oppositeColor: String = selectedColors
             if oppositeColor.hasSuffix("Highlighted") {
-                let range = oppositeColor.endIndex.advancedBy(-"Highlighted".characters.count)..<oppositeColor.endIndex
-                oppositeColor.removeRange(range)
+                let range = oppositeColor.characters.index(oppositeColor.endIndex, offsetBy: -"Highlighted".characters.count)..<oppositeColor.endIndex
+                oppositeColor.removeSubrange(range)
                 oppositeColor += "Grad"
             } else {
-                let range = oppositeColor.endIndex.advancedBy(-"Grad".characters.count)..<oppositeColor.endIndex
-                oppositeColor.removeRange(range)
+                let range = oppositeColor.characters.index(oppositeColor.endIndex, offsetBy: -"Grad".characters.count)..<oppositeColor.endIndex
+                oppositeColor.removeSubrange(range)
                 oppositeColor += "Highlighted"
             }
             selectedColors = oppositeColor
@@ -1812,15 +1836,15 @@ class GradientButton: UIButton {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        backgroundColor = UIColor.clearColor()
-        tintColor = UIColor.clearColor()
+        backgroundColor = UIColor.clear
+        tintColor = UIColor.clear
         layer.cornerRadius = 8.0
         layer.masksToBounds = true
         layer.borderWidth = 2.0
-        layer.backgroundColor = UIColor.clearColor().CGColor
-        layer.borderColor = UIColor.whiteColor().CGColor
-        setTitleColor(UIColor.whiteColor(), forState: .Normal)
-        setTitleColor(UIColor.whiteColor(), forState: .Selected)
+        layer.backgroundColor = UIColor.clear.cgColor
+        layer.borderColor = UIColor.white.cgColor
+        setTitleColor(UIColor.white, for: UIControlState())
+        setTitleColor(UIColor.white, for: .selected)
         useBlackStyle()
     }
     
@@ -1844,17 +1868,17 @@ class GradientButton: UIButton {
         selectedColors = "greenGrad"
     }
     
-    override func drawRect(rect: CGRect) {
+    override func draw(_ rect: CGRect) {
         let startPoint = CGPoint(x:(self.bounds.size.width / 2.0), y:self.bounds.size.height - 0.5)
         let endPoint = CGPoint(x:(self.bounds.size.width / 2.0), y:0.0)
         let context = UIGraphicsGetCurrentContext()
         let colorSpace = CGColorSpaceCreateDeviceRGB()
         var cgcolors: [CGColor] = [CGColor]()
         self.normalGradients.forEach { (color) in
-            cgcolors.append(color.CGColor)
+            cgcolors.append(color.cgColor)
         }
-        let gradient = CGGradientCreateWithColors(colorSpace, cgcolors, self.normalGradientLocations)
-        CGContextDrawLinearGradient(context!, gradient!, startPoint, endPoint, CGGradientDrawingOptions.DrawsBeforeStartLocation)
+        let gradient = CGGradient(colorsSpace: colorSpace, colors: cgcolors as CFArray, locations: self.normalGradientLocations)
+        context!.drawLinearGradient(gradient!, start: startPoint, end: endPoint, options: CGGradientDrawingOptions.drawsBeforeStartLocation)
     }
     
 }
@@ -1867,31 +1891,27 @@ extension UIResponder {
    
     
     func getParentViewController() -> UIViewController? {
-        if self.nextResponder() is UIViewController {
-            return self.nextResponder() as? UIViewController
+        if self.next is UIViewController {
+            return self.next as? UIViewController
         } else {
-            if self.nextResponder() != nil {
-                return (self.nextResponder()!).getParentViewController()
+            if self.next != nil {
+                return (self.next!).getParentViewController()
             }
             else {return nil}
         }
     }
     
-    func delay(delay: Double, closure: ()->()) {
-        dispatch_after(
-            dispatch_time(
-                DISPATCH_TIME_NOW,
-                Int64(delay * Double(NSEC_PER_SEC))
-            ),
-            dispatch_get_main_queue(),
-            closure
+    func delay(_ delay: Double, closure: @escaping ()->()) {
+        DispatchQueue.main.asyncAfter(
+            deadline: DispatchTime.now() + Double(Int64(delay * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC),
+            execute: closure
         )
     }
     
     typealias NavPushClosure = (UIViewController) -> Void
     
-    func NavPush(name: String, completion: NavPushClosure?) {
-        let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier(name)
+    func NavPush(_ name: String, completion: NavPushClosure?) {
+        let viewController = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: name)
         sideMenuNavigationController!.pushViewController(viewController, animated: true)
         if completion != nil {
             completion!(viewController)
@@ -1914,39 +1934,39 @@ extension UIResponder {
 }
 
 
-public class VisualEffectView: UIVisualEffectView {
+open class VisualEffectView: UIVisualEffectView {
     
     let blurEffect = (NSClassFromString("_UICustomBlurEffect") as! UIBlurEffect.Type).init()
     
     /// Tint color.
-    public var colorTint: UIColor {
+    open var colorTint: UIColor {
         get { return _valueForKey("colorTint") as! UIColor }
         set { _setValue(newValue, forKey: "colorTint") }
     }
     
     /// Tint color alpha.
-    public var colorTintAlpha: CGFloat {
+    open var colorTintAlpha: CGFloat {
         get { return _valueForKey("colorTintAlpha") as! CGFloat }
         set { _setValue(newValue as AnyObject?, forKey: "colorTintAlpha") }
     }
     
     /// Blur radius.
-    public var blurRadius: CGFloat {
+    open var blurRadius: CGFloat {
         get { return _valueForKey("blurRadius") as! CGFloat }
         set { _setValue(newValue as AnyObject?, forKey: "blurRadius") }
     }
     
     /// Scale factor.
-    public var scale: CGFloat {
+    open var scale: CGFloat {
         get { return _valueForKey("scale") as! CGFloat }
         set { _setValue(newValue as AnyObject?, forKey: "scale") }
     }
     
-    func _valueForKey(key: String) -> Any? {
-        return blurEffect.valueForKeyPath(key)
+    func _valueForKey(_ key: String) -> Any? {
+        return blurEffect.value(forKeyPath: key)
     }
     
-    func _setValue(value: AnyObject?, forKey key: String) {
+    func _setValue(_ value: AnyObject?, forKey key: String) {
         blurEffect.setValue(value, forKeyPath: key)
         self.effect = blurEffect
     }
@@ -1958,13 +1978,13 @@ public class VisualEffectView: UIVisualEffectView {
 // MARK: - UIColor
 
 extension UIColor{
-    class func colorWithHex(hex: String, alpha: CGFloat = 1.0) -> UIColor {
+    class func colorWithHex(_ hex: String, alpha: CGFloat = 1.0) -> UIColor {
         var rgb: CUnsignedInt = 0;
-        let scanner = NSScanner(string: hex)
+        let scanner = Scanner(string: hex)
         if hex.hasPrefix("#") {
             scanner.scanLocation = 1
         }
-        scanner.scanHexInt(&rgb)
+        scanner.scanHexInt32(&rgb)
         let r = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
         let g = CGFloat((rgb & 0xFF00) >> 8) / 255.0
         let b = CGFloat(rgb & 0xFF) / 255.0

@@ -10,7 +10,7 @@ import Foundation
 
 class Images {
     
-    class func squareImage(image: UIImage, size: CGFloat) -> UIImage? {
+    class func squareImage(_ image: UIImage, size: CGFloat) -> UIImage? {
         var cropped: UIImage!
         if (image.size.height > image.size.width)
         {
@@ -28,21 +28,21 @@ class Images {
         return resized
     }
     
-    class func resizeImage( image: UIImage, width: CGFloat, height: CGFloat) -> UIImage? {
+    class func resizeImage( _ image: UIImage, width: CGFloat, height: CGFloat) -> UIImage? {
         var image = image
-        let size = CGSizeMake(width, height)
+        let size = CGSize(width: width, height: height)
         UIGraphicsBeginImageContextWithOptions(size, false, 0)
-        image.drawInRect(CGRectMake(0, 0, size.width, size.height))
+        image.draw(in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
         image = UIGraphicsGetImageFromCurrentImageContext()!
         UIGraphicsEndImageContext()
         return image
     }
     
-    class func cropImage(image: UIImage, x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) -> UIImage? {
-        let rect = CGRectMake(x, y, width, height)
+    class func cropImage(_ image: UIImage, x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) -> UIImage? {
+        let rect = CGRect(x: x, y: y, width: width, height: height)
 
-        let imageRef = CGImageCreateWithImageInRect(image.CGImage!, rect)
-        let cropped = UIImage(CGImage: imageRef!)
+        let imageRef = image.cgImage!.cropping(to: rect)
+        let cropped = UIImage(cgImage: imageRef!)
 
         return cropped
     }

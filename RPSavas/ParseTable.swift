@@ -15,31 +15,31 @@ import ParseFacebookUtilsV4
 
 class  FriendsTable: ParseTable, MGSwipeTableCellDelegate {
     
-    override func viewDidAppear(animated: Bool) {
-        PFUser.currentUser()!["friendAccepted"] = 0
-        PFUser.currentUser()!.saveInBackground()
+    override func viewDidAppear(_ animated: Bool) {
+        PFUser.current()!["friendAccepted"] = 0
+        PFUser.current()!.saveInBackground()
         for visibleCell in tableView.visibleCells {
-            guard let indexPath = tableView.indexPathForCell(visibleCell) else {
+            guard let indexPath = tableView.indexPath(for: visibleCell) else {
                 return
             }
             let friend = FriendsList[indexPath.row]
             let query = PFQuery(className: "Chat")
             let id1: String = friend.objectId!
-            let id2: String = PFUser.currentUser()!.objectId!
+            let id2: String = PFUser.current()!.objectId!
             let groupId: String = (id1 < id2) ? "\(id1),\(id2)" : "\(id2),\(id1)"
             query.whereKey("groupId", equalTo: groupId)
-            query.orderByDescending("createdAt")
-            query.getFirstObjectInBackgroundWithBlock({ (object, error) in
+            query.order(byDescending: "createdAt")
+            query.getFirstObjectInBackground(block: { (object, error) in
                 if error == nil && object != nil {
                     if (visibleCell as! SwipeCell).Details!.text != object!["text"] as? String {
                         (visibleCell as! SwipeCell).Details!.text = object!["text"] as! String
-                        (visibleCell as! SwipeCell).Details!.hidden = false
+                        (visibleCell as! SwipeCell).Details!.isHidden = false
                     } else if object!["text"] == nil {
-                        (visibleCell as! SwipeCell).Details!.hidden = true
+                        (visibleCell as! SwipeCell).Details!.isHidden = true
                     }
                 } else {
                     (visibleCell as! SwipeCell).Details!.text = nil
-                    (visibleCell as! SwipeCell).Details!.hidden = true
+                    (visibleCell as! SwipeCell).Details!.isHidden = true
                 }
             })
         }
@@ -57,7 +57,7 @@ class ParseTable: UITableViewController, MAGearRefreshDelegate, DZNEmptyDataSetS
     var forceRefresh = false
     var stopFetching = false
     var pageNumber = 0
-    var appTimer: NSTimer?
+    var appTimer: Timer?
     var initialLoad: Bool = false
     
     lazy var SearchControl: UISearchController? = {
@@ -68,22 +68,22 @@ class ParseTable: UITableViewController, MAGearRefreshDelegate, DZNEmptyDataSetS
         searchControl.searchBar.backgroundColor = AppConfiguration.startingColor.darkenedColor(0.2)
         searchControl.searchBar.barTintColor = AppConfiguration.startingColor.darkenedColor(0.2)
         searchControl.searchBar.delegate = self
-        searchControl.searchBar.layer.shadowColor = AppConfiguration.startingColor.darkenedColor(0.2).CGColor
+        searchControl.searchBar.layer.shadowColor = AppConfiguration.startingColor.darkenedColor(0.2).cgColor
         searchControl.searchBar.layer.shadowOpacity = 0.5
         searchControl.searchBar.layer.masksToBounds = true
         searchControl.searchBar.showsCancelButton = false
         searchControl.searchBar.showsBookmarkButton = false
         searchControl.searchBar.showsSearchResultsButton = false
-        searchControl.searchBar.searchBarStyle = UISearchBarStyle.Default
+        searchControl.searchBar.searchBarStyle = UISearchBarStyle.default
         searchControl.searchBar.placeholder = "Search User.."
-        searchControl.searchBar.tintColor = UIColor.whiteColor()
+        searchControl.searchBar.tintColor = UIColor.white
         self.definesPresentationContext = true
         return searchControl
     }()
     
     func startReloadTimer() {
         if appTimer == nil {
-            appTimer = NSTimer.scheduledTimerWithTimeInterval(60.0, target:self, selector:#selector(onTick(_:)), userInfo:nil, repeats:true)
+            appTimer = Timer.scheduledTimer(timeInterval: 60.0, target:self, selector:#selector(onTick(_:)), userInfo:nil, repeats:true)
         }
     }
     
@@ -94,7 +94,7 @@ class ParseTable: UITableViewController, MAGearRefreshDelegate, DZNEmptyDataSetS
         }
     }
     
-    func onTick(timer: NSTimer) {
+    func onTick(_ timer: Timer) {
         self.forceFetchData()
     }
     
@@ -106,7 +106,7 @@ class ParseTable: UITableViewController, MAGearRefreshDelegate, DZNEmptyDataSetS
     }
    
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tableView.backgroundColor = AppConfiguration.startingColor
         addRefresher()
@@ -124,20 +124,20 @@ class ParseTable: UITableViewController, MAGearRefreshDelegate, DZNEmptyDataSetS
         fetchData()
     }
     
-    func updateSearchResultsForSearchController(searchController: UISearchController) {
+    func updateSearchResults(for searchController: UISearchController) {
         searchingName(searchController.searchBar.text!, searchBar: searchController.searchBar)
     }
     
-    func searchBarTextDidBeginEditing(searchBar: UISearchBar) {
+    func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         searchBar.setShowsCancelButton(true, animated: true)
     }
     
-    func searchBarTextDidEndEditing(searchBar: UISearchBar) {
+    func searchBarTextDidEndEditing(_ searchBar: UISearchBar) {
         searchBar.setShowsCancelButton(false, animated: true)
     }
     
-    func searchBarCancelButtonClicked(searchBar: UISearchBar) {
-        if searchBar.isFirstResponder() {
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        if searchBar.isFirstResponder {
             searchBar.resignFirstResponder()
         }
         FriendsList.removeAll()
@@ -148,34 +148,34 @@ class ParseTable: UITableViewController, MAGearRefreshDelegate, DZNEmptyDataSetS
         forceFetchData()
     }
     
-    func searchBarSearchButtonClicked(searchBar: UISearchBar) {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchingName(searchBar.text!, searchBar: searchBar)
-        if searchBar.isFirstResponder() {
+        if searchBar.isFirstResponder {
             searchBar.resignFirstResponder()
         }
     }
     
-    func searchingName(name: String, searchBar: UISearchBar) {
+    func searchingName(_ name: String, searchBar: UISearchBar) {
         activityIndicatorView.startAnimation()
         let query = PFUser.query()
         query!.limit = 999
         if searching == true {
             query!.whereKey("fullname", hasPrefix: searchBar.text)
-            query!.whereKey("objectId", notEqualTo: PFUser.currentUser()!.objectId!)
-            if PFUser.currentUser()!["Friends"] != nil {
-                query!.whereKey("objectId", notContainedIn: PFUser.currentUser()!["Friends"] as! [String])
+            query!.whereKey("objectId", notEqualTo: PFUser.current()!.objectId!)
+            if PFUser.current()!["Friends"] != nil {
+                query!.whereKey("objectId", notContainedIn: PFUser.current()!["Friends"] as! [String])
             }
         } else if searching == false {
             query!.whereKey("fullname", hasPrefix: searchBar.text)
-            query!.whereKey("objectId", notEqualTo: PFUser.currentUser()!.objectId!)
-            if PFUser.currentUser()!["Friends"] != nil {
-                query!.whereKey("objectId", containedIn: PFUser.currentUser()!["Friends"] as! [String])
+            query!.whereKey("objectId", notEqualTo: PFUser.current()!.objectId!)
+            if PFUser.current()!["Friends"] != nil {
+                query!.whereKey("objectId", containedIn: PFUser.current()!["Friends"] as! [String])
             }
         }
         query!.cachePolicy = AppConfiguration.cachePolicy
         query!.maxCacheAge = 3600
-        query!.orderByDescending("fullname")
-        query!.findObjectsInBackgroundWithBlock({
+        query!.order(byDescending: "fullname")
+        query!.findObjectsInBackground(block: {
             objects, error in
             if error == nil {
                 self.FriendsList = objects! as! [PFUser]
@@ -190,94 +190,94 @@ class ParseTable: UITableViewController, MAGearRefreshDelegate, DZNEmptyDataSetS
     
     func addRefresher() {
         self.tableView.tableFooterView = UIView()
-        refresherControl = MAGearRefreshControl(frame: CGRectMake(0, -self.tableView.bounds.height, self.view.frame.width, self.tableView.bounds.height))
-        refresherControl.backgroundColor =  UIColor.blackColor()
+        refresherControl = MAGearRefreshControl(frame: CGRect(x: 0, y: -self.tableView.bounds.height, width: self.view.frame.width, height: self.tableView.bounds.height))
+        refresherControl.backgroundColor =  UIColor.black
         refresherControl.addInitialGear(nbTeeth:12, color: UIColor.coolGrayColor(), radius:16)
-        refresherControl.addLinkedGear(0, nbTeeth:45, color: UIColor.coolGrayColor(), angleInDegree: 0, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(0, nbTeeth:25, color: UIColor.coolGrayColor(), angleInDegree: 180, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(1, nbTeeth:14, color: UIColor.coolGrayColor(), angleInDegree: 0, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(2, nbTeeth:14, color: UIColor.coolGrayColor(), angleInDegree: 180, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(3, nbTeeth:25, color: UIColor.coolGrayColor(), angleInDegree: 0, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(4, nbTeeth:18, color: UIColor.coolGrayColor(), angleInDegree: 195, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(6, nbTeeth:30, color: UIColor.coolGrayColor(), angleInDegree: 170, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(6, nbTeeth:25, color: UIColor.coolGrayColor(), angleInDegree: 80, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(0, nbTeeth:45, color: UIColor.coolGrayColor(), angleInDegree: -100, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(2, nbTeeth:50, color: UIColor.coolGrayColor(), angleInDegree: 90, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(1, nbTeeth:20, color: UIColor.coolGrayColor(), angleInDegree: 110, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(1, nbTeeth:14, color: UIColor.coolGrayColor(), angleInDegree: 150, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(5, nbTeeth:34, color: UIColor.coolGrayColor(), angleInDegree: 130, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(5, nbTeeth:54, color: UIColor.coolGrayColor(), angleInDegree: -115, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(4, nbTeeth:28, color: UIColor.coolGrayColor(), angleInDegree: -90, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(7, nbTeeth:35, color: UIColor.coolGrayColor(), angleInDegree: 90, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(15, nbTeeth:47, color: UIColor.coolGrayColor(), angleInDegree: -150, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(15, nbTeeth:18, color: UIColor.coolGrayColor(), angleInDegree: -80, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(14, nbTeeth:18, color: UIColor.coolGrayColor(), angleInDegree: 180, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(1, nbTeeth:18, color: UIColor.coolGrayColor(), angleInDegree: 82, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(19, nbTeeth:42, color: UIColor.coolGrayColor(), angleInDegree: -90, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(17, nbTeeth:42, color: UIColor.coolGrayColor(), angleInDegree: -40, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(9, nbTeeth:23, color: UIColor.coolGrayColor(), angleInDegree: -95, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(20, nbTeeth:42, color: UIColor.coolGrayColor(), angleInDegree: 110, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(14, nbTeeth:50, color: UIColor.coolGrayColor(), angleInDegree: -90, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(13, nbTeeth:24, color: UIColor.coolGrayColor(), angleInDegree: 65, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(13, nbTeeth:18, color: UIColor.coolGrayColor(), angleInDegree: 110, gearStyle: .WithBranchs)
-        refresherControl.addLinkedGear(16, nbTeeth:19, color: UIColor.coolGrayColor(), angleInDegree: 20, gearStyle: .WithBranchs)
+        refresherControl.addLinkedGear(0, nbTeeth:45, color: UIColor.coolGrayColor(), angleInDegree: 0, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(0, nbTeeth:25, color: UIColor.coolGrayColor(), angleInDegree: 180, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(1, nbTeeth:14, color: UIColor.coolGrayColor(), angleInDegree: 0, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(2, nbTeeth:14, color: UIColor.coolGrayColor(), angleInDegree: 180, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(3, nbTeeth:25, color: UIColor.coolGrayColor(), angleInDegree: 0, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(4, nbTeeth:18, color: UIColor.coolGrayColor(), angleInDegree: 195, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(6, nbTeeth:30, color: UIColor.coolGrayColor(), angleInDegree: 170, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(6, nbTeeth:25, color: UIColor.coolGrayColor(), angleInDegree: 80, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(0, nbTeeth:45, color: UIColor.coolGrayColor(), angleInDegree: -100, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(2, nbTeeth:50, color: UIColor.coolGrayColor(), angleInDegree: 90, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(1, nbTeeth:20, color: UIColor.coolGrayColor(), angleInDegree: 110, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(1, nbTeeth:14, color: UIColor.coolGrayColor(), angleInDegree: 150, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(5, nbTeeth:34, color: UIColor.coolGrayColor(), angleInDegree: 130, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(5, nbTeeth:54, color: UIColor.coolGrayColor(), angleInDegree: -115, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(4, nbTeeth:28, color: UIColor.coolGrayColor(), angleInDegree: -90, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(7, nbTeeth:35, color: UIColor.coolGrayColor(), angleInDegree: 90, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(15, nbTeeth:47, color: UIColor.coolGrayColor(), angleInDegree: -150, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(15, nbTeeth:18, color: UIColor.coolGrayColor(), angleInDegree: -80, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(14, nbTeeth:18, color: UIColor.coolGrayColor(), angleInDegree: 180, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(1, nbTeeth:18, color: UIColor.coolGrayColor(), angleInDegree: 82, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(19, nbTeeth:42, color: UIColor.coolGrayColor(), angleInDegree: -90, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(17, nbTeeth:42, color: UIColor.coolGrayColor(), angleInDegree: -40, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(9, nbTeeth:23, color: UIColor.coolGrayColor(), angleInDegree: -95, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(20, nbTeeth:42, color: UIColor.coolGrayColor(), angleInDegree: 110, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(14, nbTeeth:50, color: UIColor.coolGrayColor(), angleInDegree: -90, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(13, nbTeeth:24, color: UIColor.coolGrayColor(), angleInDegree: 65, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(13, nbTeeth:18, color: UIColor.coolGrayColor(), angleInDegree: 110, gearStyle: .withBranchs)
+        refresherControl.addLinkedGear(16, nbTeeth:19, color: UIColor.coolGrayColor(), angleInDegree: 20, gearStyle: .withBranchs)
         refresherControl.delegate = self
         self.tableView.addSubview(refresherControl)
     }
     
-    func emptyDataSetShouldAllowTouch(scrollView: UIScrollView!) -> Bool {
+    func emptyDataSetShouldAllowTouch(_ scrollView: UIScrollView!) -> Bool {
         return true
     }
     
-    func emptyDataSetShouldAllowScroll(scrollView: UIScrollView!) -> Bool {
+    func emptyDataSetShouldAllowScroll(_ scrollView: UIScrollView!) -> Bool {
         return true
     }
     
-    func backgroundColorForEmptyDataSet(scrollView: UIScrollView!) -> UIColor! {
+    func backgroundColor(forEmptyDataSet scrollView: UIScrollView!) -> UIColor! {
         return .charcoalColor()
     }
     
-    override func scrollViewDidScroll(scrollView: UIScrollView) {
+    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
         refresherControl.MAGearRefreshScrollViewDidScroll(scrollView)
     }
     
-    func quickMatchPressed(sender: UIBarButtonItem) {
+    func quickMatchPressed(_ sender: UIBarButtonItem) {
         self.NavPush("GameController", completion: nil)
     }
     
-    func gameRequestPressed(sender: UIBarButtonItem) {
+    func gameRequestPressed(_ sender: UIBarButtonItem) {
         self.NavPush("FriendsTable", completion: nil)
     }
     
-    func customViewForEmptyDataSet(scrollView: UIScrollView!) -> UIView! {
+    func customView(forEmptyDataSet scrollView: UIScrollView!) -> UIView! {
         let viewBounds = scrollView.bounds
         var image: UIImageView!
         let imageForEmpty = UIImage(named: "RPSLogo")
-        if UIScreen.mainScreen().bounds.width > 320 {
+        if UIScreen.main.bounds.width > 320 {
             image = UIImageView(image: imageForEmpty)
             image.frame = CGRect(x: self.view.bounds.midX - ((viewBounds.width * 0.8) / 2), y: viewBounds.height / 5 , width: viewBounds.width * 0.8 , height: viewBounds.width * 0.8)
-            image.contentMode = .ScaleAspectFit
+            image.contentMode = .scaleAspectFit
         } else {
             let newImage = Images.resizeImage(imageForEmpty!, width: viewBounds.width / 2.5, height: viewBounds.width / 2.5)
             image = UIImageView(image: newImage)
             image.frame = CGRect(x: self.view.bounds.midX - ((viewBounds.width / 2.5) / 2), y: viewBounds.height / 4.5 , width: viewBounds.width / 2.5, height: viewBounds.width / 2.5)
-            image.contentMode = .ScaleAspectFit
+            image.contentMode = .scaleAspectFit
         }
         let label = UILabel(frame: CGRect(x: 20, y: image.frame.maxY + 5, width: viewBounds.width - 40, height: 50))
         label.text = "No Friends"
-        label.font = UIFont.boldSystemFontOfSize(18.0)
-        label.textColor = .whiteColor()
-        label.textAlignment = .Center
+        label.font = UIFont.boldSystemFont(ofSize: 18.0)
+        label.textColor = .white
+        label.textAlignment = .center
         let label2 = UILabel(frame: CGRect(x: 20, y: label.frame.maxY + 5, width: viewBounds.width - 40, height: 80))
         label2.text = "Send a Friend Request to a Friend or use Facebook to find your Friends"
-        label2.font = UIFont.boldSystemFontOfSize(14.0)
-        label2.lineBreakMode = NSLineBreakMode.ByWordWrapping
-        label2.textAlignment = .Center
+        label2.font = UIFont.boldSystemFont(ofSize: 14.0)
+        label2.lineBreakMode = NSLineBreakMode.byWordWrapping
+        label2.textAlignment = .center
         label2.numberOfLines = 3
-        label2.textColor = .lightGrayColor()
+        label2.textColor = .lightGray
         let QuickMatch = GradientButton(frame: CGRect(x: 20, y: label2 .frame.maxY + 15, width: viewBounds.width - 40, height: 40))
-        QuickMatch.addTarget(self, action: #selector(self.AddFriends), forControlEvents: .TouchUpInside)
-        QuickMatch.setTitle("Find Friends", forState: UIControlState.Normal)
+        QuickMatch.addTarget(self, action: #selector(self.AddFriends), for: .touchUpInside)
+        QuickMatch.setTitle("Find Friends", for: UIControlState())
         QuickMatch.useBlackStyle()
         QuickMatch.layer.cornerRadius = 8.0
         QuickMatch.layer.masksToBounds = true
@@ -290,15 +290,15 @@ class ParseTable: UITableViewController, MAGearRefreshDelegate, DZNEmptyDataSetS
         return bottomView
     }
     
-    override func scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+    override func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         refresherControl.MAGearRefreshScrollViewDidEndDragging(scrollView)
     }
     
-    func MAGearRefreshTableHeaderDataSourceIsLoading(view: MAGearRefreshControl) -> Bool {
+    func MAGearRefreshTableHeaderDataSourceIsLoading(_ view: MAGearRefreshControl) -> Bool {
         return requestInProgress
     }
     
-    func MAGearRefreshTableHeaderDidTriggerRefresh(view: MAGearRefreshControl) {
+    func MAGearRefreshTableHeaderDidTriggerRefresh(_ view: MAGearRefreshControl) {
         self.forceFetchData()
     }
 
@@ -309,16 +309,16 @@ class ParseTable: UITableViewController, MAGearRefreshDelegate, DZNEmptyDataSetS
             let query = PFUser.query()
             query!.limit = 20
             query!.skip = pageNumber*20
-            if PFUser.currentUser()!["Friends"] != nil {
-                query!.whereKey("objectId", containedIn: PFUser.currentUser()!["Friends"] as! [String])
-            } else if PFUser.currentUser()!["Friends"] == nil || (PFUser.currentUser()!["Friends"] as! [String]).isEmpty {
+            if PFUser.current()!["Friends"] != nil {
+                query!.whereKey("objectId", containedIn: PFUser.current()!["Friends"] as! [String])
+            } else if PFUser.current()!["Friends"] == nil || (PFUser.current()!["Friends"] as! [String]).isEmpty {
                 activityIndicatorView.stopAnimation()
                 return
             }
             query!.cachePolicy = AppConfiguration.cachePolicy
             query!.maxCacheAge = 3600
-            query!.orderByDescending("fullname")
-            query!.findObjectsInBackgroundWithBlock({
+            query!.order(byDescending: "fullname")
+            query!.findObjectsInBackground(block: {
                 objects, error in
                 if error == nil {
                     if self.pageNumber == 0 {
@@ -330,7 +330,7 @@ class ParseTable: UITableViewController, MAGearRefreshDelegate, DZNEmptyDataSetS
                             array.append(follow as! PFUser)
                         }
                     }
-                    self.FriendsList.appendContentsOf(array)
+                    self.FriendsList.append(contentsOf: array)
                     self.tableView.reloadData()
                     activityIndicatorView.stopAnimation()
                     self.requestInProgress = false
@@ -351,19 +351,19 @@ class ParseTable: UITableViewController, MAGearRefreshDelegate, DZNEmptyDataSetS
     }
     
     func addFriendsButton() {
-        let FriendButton: UIBarButtonItem = UIBarButtonItem(image: UIImage(named: "add")!, style: UIBarButtonItemStyle.Plain, target: self, action: #selector(self.AddFriends))
-        FriendButton.tintColor = UIColor.whiteColor()
-        self.navigationItem.setRightBarButtonItem(FriendButton, animated: true)
+        let FriendButton: UIBarButtonItem = UIBarButtonItem(image: UIImage(named: "add")!, style: UIBarButtonItemStyle.plain, target: self, action: #selector(self.AddFriends))
+        FriendButton.tintColor = UIColor.white
+        self.navigationItem.setRightBarButton(FriendButton, animated: true)
     }
     
     func AddFriends() {
-        let alertVC = UIAlertController(title: "Add A Friend", message: "How would you like to add a friend?", preferredStyle: UIAlertControllerStyle.ActionSheet)
-        let Facebook = UIAlertAction(title: "Load Facebook Friends", style: UIAlertActionStyle.Default) { (UIAlertAction) -> Void in
+        let alertVC = UIAlertController(title: "Add A Friend", message: "How would you like to add a friend?", preferredStyle: UIAlertControllerStyle.actionSheet)
+        let Facebook = UIAlertAction(title: "Load Facebook Friends", style: UIAlertActionStyle.default) { (UIAlertAction) -> Void in
             activityIndicatorView.startAnimation()
             let friendRequest = FBSDKGraphRequest(graphPath:"/me/friends", parameters: nil)
-            friendRequest.startWithCompletionHandler { (connection : FBSDKGraphRequestConnection!, result : AnyObject!, error : NSError!) -> Void in
+            friendRequest!.start(completionHandler: { (connection: FBSDKGraphRequestConnection?, result : Any?, error : Error?) in
                 if error != nil {
-                    ProgressHUD.showError(error.localizedDescription)
+                    ProgressHUD.showError(error?.localizedDescription)
                     activityIndicatorView.stopAnimation()
                     return
                 } else {
@@ -372,28 +372,28 @@ class ParseTable: UITableViewController, MAGearRefreshDelegate, DZNEmptyDataSetS
                         activityIndicatorView.stopAnimation()
                         return
                     }
-                    let data : NSArray = resultdict.objectForKey("data") as! NSArray
+                    let data : NSArray = resultdict.object(forKey: "data") as! NSArray
                     if data.count == 0 {
                         ProgressHUD.showError("No Facebook Friends Found")
                         activityIndicatorView.stopAnimation()
                     } else {
                         for i in 0 ..< data.count {
                             let valueDict : NSDictionary = data[i] as! NSDictionary
-                            let id = valueDict.objectForKey("id") as! String
+                            let id = valueDict.object(forKey: "id") as! String
                             let Querier = PFUser.query()
                             Querier!.whereKey("FacebookID", equalTo: id)
-                            Querier!.getFirstObjectInBackgroundWithBlock( { (object, error) in
+                            Querier!.getFirstObjectInBackground( block: { (object, error) in
                                 if error == nil  {
-                                    if PFUser.currentUser()!["Friends"] != nil {
-                                        var friends: [String] = PFUser.currentUser()!["Friends"] as! [String]
+                                    if PFUser.current()!["Friends"] != nil {
+                                        var friends: [String] = PFUser.current()!["Friends"] as! [String]
                                         if !friends.contains(object!.objectId!) {
                                             friends.append(object!.objectId!)
-                                            PFUser.currentUser()!["Friends"] = friends
-                                            PFUser.currentUser()!.saveInBackground()
+                                            PFUser.current()!["Friends"] = friends
+                                            PFUser.current()!.saveInBackground()
                                         }
                                     } else {
-                                        PFUser.currentUser()!["Friends"] = [object!.objectId!]
-                                        PFUser.currentUser()!.saveInBackground()
+                                        PFUser.current()!["Friends"] = [object!.objectId!]
+                                        PFUser.current()!.saveInBackground()
                                     }
                                 }
                                 if i == (data.count - 1) {
@@ -405,40 +405,40 @@ class ParseTable: UITableViewController, MAGearRefreshDelegate, DZNEmptyDataSetS
                         }
                     }
                 }
-            }
+            })
         }
-        let Search = UIAlertAction(title: "Search Friends By Username", style: UIAlertActionStyle.Default) { (UIAlertAction) -> Void in
+        let Search = UIAlertAction(title: "Search Friends By Username", style: UIAlertActionStyle.default) { (UIAlertAction) -> Void in
             self.searching = true
-            self.SearchControl!.active = true
+            self.SearchControl!.isActive = true
             self.SearchControl!.searchBar.placeholder = "Enter username.."
             self.searchingName(self.SearchControl!.searchBar.text!, searchBar: self.SearchControl!.searchBar)
-            self.navigationItem.setRightBarButtonItem(nil, animated: true)
+            self.navigationItem.setRightBarButton(nil, animated: true)
         }
-        let Cancel = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.Cancel) { (UIAlertAction) -> Void in}
+        let Cancel = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.cancel) { (UIAlertAction) -> Void in}
         alertVC.addAction(Facebook)
         alertVC.addAction(Search)
         alertVC.addAction(Cancel)
-        self.presentViewController(alertVC, animated: true, completion: nil)
+        self.present(alertVC, animated: true, completion: nil)
     }
     
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return FriendsList.count
     }
     
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return cellHeight
     }
     
-    override func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         (cell as! SwipeCell).setupUser(self)
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("SwipeCell", forIndexPath: indexPath) as! SwipeCell
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "SwipeCell", for: indexPath) as! SwipeCell
         if indexPath.row <= (FriendsList.count - 1) {
             cell.index = indexPath
             cell.table = self
@@ -447,12 +447,12 @@ class ParseTable: UITableViewController, MAGearRefreshDelegate, DZNEmptyDataSetS
         return cell
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        let cell:SwipeCell = (tableView.cellForRowAtIndexPath(indexPath) as? SwipeCell)!
-        if cell.swipeState == MGSwipeState.SwipingRightToLeft {
-            cell.hideSwipeAnimated(true)
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let cell:SwipeCell = (tableView.cellForRow(at: indexPath) as? SwipeCell)!
+        if cell.swipeState == MGSwipeState.swipingRightToLeft {
+            cell.hideSwipe(animated: true)
         } else {
-            cell.showSwipe(MGSwipeDirection.RightToLeft, animated: true, completion: nil)
+            cell.showSwipe(MGSwipeDirection.rightToLeft, animated: true, completion: nil)
         }
     }
     

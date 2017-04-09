@@ -6,9 +6,9 @@ class GameController: GameViewController {
         title = "Quick Match"
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         gameview = GameView(frame: self.view.bounds)
-        gameview!.type = .Random
+        gameview!.type = .random
         self.view.addSubview(gameview!)
         gameview!.presentReady()
         sideMenuObj.gameControls = true
@@ -22,9 +22,9 @@ class FriendGame: GameViewController {
         title = "RPSavvy"
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         gameview = GameView(frame: self.view.bounds)
-        gameview!.type = .Friend
+        gameview!.type = .friend
         self.view.addSubview(gameview!)
         gameview!.presentReady()
         sideMenuObj.gameControls = true
@@ -43,7 +43,7 @@ class GameViewController: UIViewController {
         view.GradLayer()
     }
     
-    override func viewDidDisappear(animated: Bool) {
+    override func viewDidDisappear(_ animated: Bool) {
         sideMenuObj.gameControls = false
         if gameview != nil {
             gameview!.removeFromSuperview()
@@ -54,54 +54,54 @@ class GameViewController: UIViewController {
 }
 
 public enum RPSChoice: Int, CustomStringConvertible {
-    case Rock = 0
-    case Paper = 1
-    case Scissors = 2
-    case Empty = 3
+    case rock = 0
+    case paper = 1
+    case scissors = 2
+    case empty = 3
     
     public var description: String {
         switch self {
-        case .Rock:
+        case .rock:
             return "rock"
-        case .Paper:
+        case .paper:
             return "paper"
-        case .Scissors:
+        case .scissors:
             return "scissors"
-        case .Empty:
+        case .empty:
             return "Empty"
         }
     }
 }
 
 public enum Results: Int, CustomStringConvertible {
-    case Win = 0
-    case Lose = 1
-    case Tie = 2
+    case win = 0
+    case lose = 1
+    case tie = 2
     
     public var description: String {
         switch self {
-        case .Win:
+        case .win:
             return "Win"
-        case .Lose:
+        case .lose:
             return "Lose"
-        case .Tie:
+        case .tie:
             return "Tie"
         }
     }
 }
 
 public enum GameType: Int, CustomStringConvertible {
-    case Random = 0
-    case Nearby = 1
-    case Friend = 2
+    case random = 0
+    case nearby = 1
+    case friend = 2
     
     public var description: String {
         switch self {
-        case .Random:
+        case .random:
             return "Random"
-        case .Nearby:
+        case .nearby:
             return "Nearby"
-        case .Friend:
+        case .friend:
             return "Friend"
         }
     }

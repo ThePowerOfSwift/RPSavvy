@@ -45,9 +45,9 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
     
     var table: ParseTable!
     
-    private var idx: Int = 0
-    private let backGroundArray = [UIImage(named:"rock"),UIImage(named:"paper"),UIImage(named:"scissors")]
-    var index: NSIndexPath? {
+    fileprivate var idx: Int = 0
+    fileprivate let backGroundArray = [UIImage(named:"rock"),UIImage(named:"paper"),UIImage(named:"scissors")]
+    var index: IndexPath? {
         didSet {
             self.Name.index = self.index
         }
@@ -60,8 +60,8 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
         self.CreateGame = MGSwipeButton(title: "", icon: UIImage(named:"paper")!, backgroundColor: messageColor, callback: { (sender: MGSwipeTableCell!) -> Bool in
             let query = PFQuery(className: "ActiveSessions")
             query.whereKey("receiver", equalTo: self.PushUser!)
-            query.whereKey("caller", equalTo: PFUser.currentUser()!)
-            query.findObjectsInBackgroundWithBlock({(objects: [PFObject]?, error: NSError?) -> Void in
+            query.whereKey("caller", equalTo: PFUser.current()!)
+            query.findObjectsInBackground(block: {(objects: [PFObject]?, error: Error?) -> Void in
                 if error == nil {
                     if objects?.count == 0 {
                         self.PushUser!.createSession({ success in
@@ -89,25 +89,25 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
         self.AddFriend = MGSwipeButton(title: "", icon: UIImage(named: "AddFriend")!, backgroundColor: messageColor, callback: { (sender: MGSwipeTableCell!) -> Bool in
             let query = PFQuery(className: "Notification")
             query.whereKey("User", equalTo: self.PushUser!)
-            query.whereKey("SentFrom", equalTo: PFUser.currentUser()!)
-            query.findObjectsInBackgroundWithBlock({(objects: [PFObject]?, error: NSError?) -> Void in
+            query.whereKey("SentFrom", equalTo: PFUser.current()!)
+            query.findObjectsInBackground(block: {(objects: [PFObject]?, error: Error?) -> Void in
                 if error == nil {
                     if objects?.count == 0 {
                         let notification: PFObject = PFObject(className: "Notification")
                         notification["User"] = self.PushUser!
-                        notification["Message"] = "\(PFUser.currentUser()!.Fullname()) sent you a friend request!"
+                        notification["Message"] = "\(PFUser.current()!.Fullname()) sent you a friend request!"
                         notification["Type"] = "friendInvite"
-                        notification["SentFrom"] = PFUser.currentUser()!
-                        notification.saveInBackgroundWithBlock({ (success, error) in
+                        notification["SentFrom"] = PFUser.current()!
+                        notification.saveInBackground(block: { (success, error) in
                             if error == nil {
                                 ProgressHUD.showSuccess("Friend request sent")
                             }
-                            self.table.tableView.userInteractionEnabled = true
+                            self.table.tableView.isUserInteractionEnabled = true
                             activityIndicatorView.stopAnimation()
                         })
                     } else {
                         ProgressHUD.showError("Friend request already sent")
-                        self.table.tableView.userInteractionEnabled = true
+                        self.table.tableView.isUserInteractionEnabled = true
                         activityIndicatorView.stopAnimation()
                     }
                 }
@@ -148,14 +148,14 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
             (sender: MGSwipeTableCell!) -> Bool in
             activityIndicatorView.startAnimation()
             if self.UserInvite != nil {
-                self.UserInvite!["Message"] = "\(PFUser.currentUser()!.Fullname()) accepted your friend request"
+                self.UserInvite!["Message"] = "\(PFUser.current()!.Fullname()) accepted your friend request"
                 self.UserInvite!["Accepted"] = true
-                self.UserInvite!.saveInBackgroundWithBlock({
+                self.UserInvite!.saveInBackground(block: {
                     success, error in
                     if error == nil {
-                        self.UserInvite!.deleteInBackgroundWithBlock({success, error in
+                        self.UserInvite!.deleteInBackground(block: {success, error in
                             if error == nil {
-                                (self.table as! InviteTable).invitesList.removeAtIndex(self.index!.row)
+                                (self.table as! InviteTable).invitesList.remove(at: self.index!.row)
                                 (self.table as! InviteTable).tableView.reloadData()
                             }
                         })
@@ -165,23 +165,23 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
                 })
             } else if self.UserRequest != nil {
                 AppConfiguration.activeSession = self.UserRequest!
-                AppConfiguration.activeSession!["callerTitle"] = "\(PFUser.currentUser()!.Fullname()) joined your game"
+                AppConfiguration.activeSession!["callerTitle"] = "\(PFUser.current()!.Fullname()) joined your game"
                 AppConfiguration.activeSession!["Accepted"] = true
-                AppConfiguration.activeSession!.saveInBackgroundWithBlock({success, error in
+                AppConfiguration.activeSession!.saveInBackground(block: {success, error in
                     if error == nil && success == true {
                         if self.PushUser!.objectId! != (self.UserRequest!["receiver"] as! PFUser).objectId! {
                             let push = PFPush()
                             let data = [
-                                "alert" : "\(PFUser.currentUser()!.Fullname()) joined your game",
+                                "alert" : "\(PFUser.current()!.Fullname()) joined your game",
                                 "badge" : "Increment",
-                                "ObjID" : (PFUser.currentUser()?.objectId!)! as String,
+                                "ObjID" : (PFUser.current()?.objectId!)! as String,
                                 "gameID" : self.UserRequest!.objectId!,
                                 "type" : "accepted"]
                             let installQuery = PFInstallation.query()
                             installQuery?.whereKey("User", equalTo: self.PushUser!)
-                            push.setQuery(installQuery)
+                            push.setQuery(installQuery as? PFQuery<PFInstallation>)
                             push.setData(data)
-                            push.sendPushInBackgroundWithBlock({ success, error in
+                            push.sendInBackground(block: { success, error in
                                 if error != nil && success == false {
                                     ProgressHUD.showError("Error sending opponent notification")
                                 } else {
@@ -210,16 +210,16 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
         self.delete = MGSwipeButton(title: "", icon: Trash, backgroundColor: trashColor, callback: {
             (sender: MGSwipeTableCell!) -> Bool in
             if self.UserInvite != nil {
-                self.UserInvite!.deleteInBackgroundWithBlock({success, error in
+                self.UserInvite!.deleteInBackground(block: {success, error in
                     if error == nil {
-                        (self.table as! InviteTable).invitesList.removeAtIndex(self.index!.row)
+                        (self.table as! InviteTable).invitesList.remove(at: self.index!.row)
                         (self.table as! InviteTable).tableView.reloadData()
                     }
                 })
             } else if self.UserRequest != nil {
-                self.UserRequest!.deleteInBackgroundWithBlock({success, error in
+                self.UserRequest!.deleteInBackground(block: {success, error in
                     if error == nil {
-                        (self.table as! RequestTable).GameList.removeAtIndex(self.index!.row)
+                        (self.table as! RequestTable).GameList.remove(at: self.index!.row)
                         (self.table as! RequestTable).tableView.reloadData()
                     }
                 })
@@ -241,7 +241,7 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
         }
     }
     
-    func setupNearbyUser(viewController: ParseTable) {
+    func setupNearbyUser(_ viewController: ParseTable) {
         setupAnimation(viewController)
         ProfileImage.setProfPic(self.nearbyUser!, color: nil) {
             self.Name.variableWidth = false
@@ -251,8 +251,8 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
             self.setupProfileButton()
             self.setupCreateButton()
             self.setupAddFriend()
-            if PFUser.currentUser()!["Friends"] != nil {
-                let friends: [String] = PFUser.currentUser()!["Friends"] as! [String]
+            if PFUser.current()!["Friends"] != nil {
+                let friends: [String] = PFUser.current()!["Friends"] as! [String]
                 if friends.contains(self.nearbyUser!.objectId!) {
                     self.rightButtons = [self.CreateGame!,self.ProfileButton!,self.delete!]
                 } else {
@@ -264,33 +264,33 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
         }
     }
     
-    private var userInvite: PFObject?
+    fileprivate var userInvite: PFObject?
     
     var UserInvite: PFObject? {
         get {
             return self.userInvite
         }
         set (newVal) {
-            self.Details!.hidden = false
+            self.Details!.isHidden = false
             self.userInvite = newVal
         }
     }
     
-    func setUpUserInvite(viewController: ParseTable) {
+    func setUpUserInvite(_ viewController: ParseTable) {
         self.PushUser = self.UserInvite!["SentFrom"] as? PFUser//((self.UserInvite!["SentFrom"] as! PFUser).objectId! != PFUser.currentUser()!.objectId!) ? self.UserInvite!["SentFrom"] as! PFUser : self.UserInvite!["User"] as! PFUser
         self.setupAnimation(viewController)
-        PFUser.query()?.getObjectInBackgroundWithId(self.PushUser!.objectId!, block: { (user, error) in
+        PFUser.query()?.getObjectInBackground(withId: self.PushUser!.objectId!, block: { (user, error) in
             if error == nil {
                 self.ProfileImage.tintColor = AppConfiguration.navText
                 if user!["picture"] != nil {
                     self.ProfileImage.file = user!["picture"] as? PFFile
-                    self.ProfileImage.loadInBackground({ (image, error) in
+                    self.ProfileImage.load(inBackground: { (image, error) in
                         if image == nil {
                             if user!["fullname"] != nil {
                                 self.ProfileImage.imageWithString(user!["fullname"] as! String, color: .charcoalColor(), circular: false, fontAttributes: nil)
                             }
                         }
-                        self.ProfileImage.layer.borderColor = UIColor.whiteColor().CGColor
+                        self.ProfileImage.layer.borderColor = UIColor.white.cgColor
                     })
                 }
                 if user!["fullname"] != nil {
@@ -305,33 +305,33 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
         })
     }
     
-    private var userRequest: PFObject?
+    fileprivate var userRequest: PFObject?
     
     var UserRequest: PFObject? {
         get {
             return self.userRequest
         }
         set (newVal) {
-            self.Details!.hidden = false
+            self.Details!.isHidden = false
             self.userRequest = newVal
         }
     }
     
-    func setupUserRequest(viewController: ParseTable) {
-        self.PushUser = ((self.UserRequest!["receiver"] as! PFUser).objectId! != PFUser.currentUser()!.objectId!) ? self.UserRequest!["receiver"] as! PFUser : self.UserRequest!["caller"] as! PFUser
+    func setupUserRequest(_ viewController: ParseTable) {
+        self.PushUser = ((self.UserRequest!["receiver"] as! PFUser).objectId! != PFUser.current()!.objectId!) ? self.UserRequest!["receiver"] as! PFUser : self.UserRequest!["caller"] as! PFUser
         self.setupAnimation(viewController)
-        PFUser.query()?.getObjectInBackgroundWithId(self.PushUser!.objectId!, block: { (user, error) in
+        PFUser.query()?.getObjectInBackground(withId: self.PushUser!.objectId!, block: { (user, error) in
             if error == nil {
                 self.ProfileImage.tintColor = AppConfiguration.navText
                 if user!["picture"] != nil {
                     self.ProfileImage.file = user!["picture"] as? PFFile
-                    self.ProfileImage.loadInBackground({ (image, error) in
+                    self.ProfileImage.load(inBackground: { (image, error) in
                         if image == nil {
                             if user!["fullname"] != nil {
                                 self.ProfileImage.imageWithString(user!["fullname"] as! String, color: .charcoalColor(), circular: false, fontAttributes: nil)
                             }
                         }
-                        self.ProfileImage.layer.borderColor = UIColor.whiteColor().CGColor
+                        self.ProfileImage.layer.borderColor = UIColor.white.cgColor
                     })
                 }
                 if user!["fullname"] != nil {
@@ -340,13 +340,13 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
             }
         })
         if self.UserRequest!["Accepted"] != nil {
-            if ((self.UserRequest!["receiver"] as! PFUser).objectId! == PFUser.currentUser()!.objectId!) {
+            if ((self.UserRequest!["receiver"] as! PFUser).objectId! == PFUser.current()!.objectId!) {
                 self.Details!.LoadingText = "Game Request Accepted!"
             } else {
                 self.Details!.LoadingText = "Accepted Your Game Invite!"
             }
         } else {
-            if ((self.UserRequest!["receiver"] as! PFUser).objectId! == PFUser.currentUser()!.objectId!) {
+            if ((self.UserRequest!["receiver"] as! PFUser).objectId! == PFUser.current()!.objectId!) {
                 self.Details!.LoadingText = "Sent You A Game Request!"
             } else {
                 self.Details!.LoadingText = "Your Invite Is Pending.."
@@ -365,7 +365,7 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
         self.rightButtons = [self.accept!, self.delete!]
     }
     
-    func setupAnimation(viewController: ParseTable) {
+    func setupAnimation(_ viewController: ParseTable) {
         let moveRight = CASpringAnimation(keyPath: "transform.translation.x")
         moveRight.fromValue = -self.contentView.frame.width
         moveRight.toValue = 0
@@ -375,8 +375,8 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
             self.alpha = 0
             self.frame = self.frame.offsetBy(dx: -self.frame.width, dy: 0)
             self.delay(Double(index!.row) * 0.5, closure: {
-                self.contentView.layer.addAnimation(moveRight, forKey: nil)
-                UIView.animateWithDuration(moveRight.settlingDuration, delay: 0.0, options: UIViewAnimationOptions.CurveEaseOut, animations: {
+                self.contentView.layer.add(moveRight, forKey: nil)
+                UIView.animate(withDuration: moveRight.settlingDuration, delay: 0.0, options: UIViewAnimationOptions.curveEaseOut, animations: {
                     self.alpha = 1.0
                 }, completion: {_ in
                     if self == viewController.tableView.visibleCells.last {
@@ -385,8 +385,8 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
                 })
             })
         } else {
-            self.contentView.layer.addAnimation(moveRight, forKey: nil)
-            UIView.animateWithDuration(moveRight.settlingDuration, delay: 0.0, options: UIViewAnimationOptions.CurveEaseOut, animations: {
+            self.contentView.layer.add(moveRight, forKey: nil)
+            UIView.animate(withDuration: moveRight.settlingDuration, delay: 0.0, options: UIViewAnimationOptions.curveEaseOut, animations: {
                 self.contentView.alpha = 1.0
             }, completion: nil)
         }
@@ -405,7 +405,7 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
         }
     }
     
-    func setupUser(viewController: ParseTable) {
+    func setupUser(_ viewController: ParseTable) {
         setupAnimation(viewController)
         ProfileImage.setProfPic(self.User!, color: nil) {
             self.Name.variableWidth = false
@@ -416,8 +416,8 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
             self.setupCreateButton()
             self.setupAddFriend()
             self.checkForText()
-            if PFUser.currentUser()!["Friends"] != nil {
-                let friends: [String] = PFUser.currentUser()!["Friends"] as! [String]
+            if PFUser.current()!["Friends"] != nil {
+                let friends: [String] = PFUser.current()!["Friends"] as! [String]
                 if friends.contains(self.User!.objectId!) {
                     self.rightButtons = [self.CreateGame!,self.ProfileButton!,self.delete!]
                 } else {
@@ -432,17 +432,17 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
     func checkForText() {
         let query = PFQuery(className: "Chat")
         let id1: String = self.User!.objectId!
-        let id2: String = PFUser.currentUser()!.objectId!
+        let id2: String = PFUser.current()!.objectId!
         let groupId: String = (id1 < id2) ? "\(id1),\(id2)" : "\(id2),\(id1)"
         query.whereKey("groupId", equalTo: groupId)
-        query.orderByDescending("createdAt")
-        query.getFirstObjectInBackgroundWithBlock({ (object, error) in
+        query.order(byDescending: "createdAt")
+        query.getFirstObjectInBackground(block: { (object, error) in
             if error == nil && object != nil {
                 self.Details!.text = object!["text"] as! String
-                self.Details!.hidden = false
+                self.Details!.isHidden = false
             } else {
                 self.Details!.text = nil
-                self.Details!.hidden = true
+                self.Details!.isHidden = true
             }
         })
     }
@@ -455,33 +455,33 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
         }
     }
     
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         if selected {
             self.normalGradients = [UIColor(red: 0.199, green: 0.199, blue: 0.199, alpha: 1.0),UIColor(red: 0.04, green: 0.04, blue: 0.04, alpha: 1.0),UIColor(red: 0.074, green: 0.074, blue: 0.074, alpha: 1.0),UIColor(red: 0.112, green: 0.112, blue: 0.112, alpha: 1.0)]
             self.delay(0.3, closure: {
                 self.normalGradients = [UIColor(red: 0.154, green: 0.154, blue: 0.154, alpha: 1.0),UIColor(red: 0.307, green: 0.307, blue: 0.307, alpha: 1.0),UIColor(red: 0.166, green: 0.166, blue: 0.166, alpha: 1.0),UIColor(red: 0.118, green: 0.118, blue: 0.118, alpha: 1.0)]
-                self.selected = false
+                self.isSelected = false
             })
         }
     }
     
-    override func drawRect(rect: CGRect) {
+    override func draw(_ rect: CGRect) {
         let startPoint = CGPoint(x:(self.bounds.size.width / 2.0), y:self.bounds.size.height - 0.5)
         let endPoint = CGPoint(x:(self.bounds.size.width / 2.0), y:0.0)
         let context = UIGraphicsGetCurrentContext()
         let colorSpace = CGColorSpaceCreateDeviceRGB()
         var cgcolors: [CGColor] = [CGColor]()
         self.normalGradients.forEach { (color) in
-            cgcolors.append(color.CGColor)
+            cgcolors.append(color.cgColor)
         }
-        let gradient = CGGradientCreateWithColors(colorSpace, cgcolors, self.normalGradientLocations)
-        CGContextDrawLinearGradient(context!, gradient!, startPoint, endPoint, CGGradientDrawingOptions.DrawsBeforeStartLocation)
+        let gradient = CGGradient(colorsSpace: colorSpace, colors: cgcolors as CFArray, locations: self.normalGradientLocations)
+        context!.drawLinearGradient(gradient!, start: startPoint, end: endPoint, options: CGGradientDrawingOptions.drawsBeforeStartLocation)
     }
     
-    func swipeTableCell(cell: MGSwipeTableCell!, didChangeSwipeState state: MGSwipeState, gestureIsActive: Bool) {
+    func swipeTableCell(_ cell: MGSwipeTableCell!, didChange state: MGSwipeState, gestureIsActive: Bool) {
         if self.CreateGame != nil {
             if (self.rightButtons as! [MGSwipeButton]).contains(self.CreateGame!) {
-                if cell.swipeState == MGSwipeState.SwipingLeftToRight {
+                if cell.swipeState == MGSwipeState.swipingLeftToRight {
                     self.CreateGame!.imageView!.stopImageDissolve()
                 } else {
                     self.CreateGame!.imageView!.startImageDissolve()
@@ -491,51 +491,51 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
     }
     
     func addToFriends() {
-        if PFUser.currentUser()!["Friends"] != nil {
-            var friends: [String] = PFUser.currentUser()!["Friends"] as! [String]
+        if PFUser.current()!["Friends"] != nil {
+            var friends: [String] = PFUser.current()!["Friends"] as! [String]
             if !friends.contains(self.PushUser!.objectId!) {
                 friends.append(self.PushUser!.objectId!)
-                PFUser.currentUser()!["Friends"] = friends
-                PFUser.currentUser()!.saveInBackground()
+                PFUser.current()!["Friends"] = friends
+                PFUser.current()!.saveInBackground()
             }
         } else {
-            PFUser.currentUser()!["Friends"] = [self.PushUser!.objectId!]
-            PFUser.currentUser()!.saveInBackground()
+            PFUser.current()!["Friends"] = [self.PushUser!.objectId!]
+            PFUser.current()!.saveInBackground()
         }
         activityIndicatorView.stopAnimation()
     }
     
     func removeFromFriends() {
-        if PFUser.currentUser()!["Friends"] != nil {
-            var friends: [String] = PFUser.currentUser()!["Friends"] as! [String]
+        if PFUser.current()!["Friends"] != nil {
+            var friends: [String] = PFUser.current()!["Friends"] as! [String]
             if friends.contains(self.PushUser!.objectId!) {
-                let index = friends.indexOf(self.PushUser!.objectId!)
-                friends.removeAtIndex(index!)
-                PFUser.currentUser()!["Friends"] = friends
-                PFUser.currentUser()!.saveInBackground()
+                let index = friends.index(of: self.PushUser!.objectId!)
+                friends.remove(at: index!)
+                PFUser.current()!["Friends"] = friends
+                PFUser.current()!.saveInBackground()
             }
         }
-        guard let index = self.table.FriendsList.indexOf(self.PushUser!) else {
+        guard let index = self.table.FriendsList.index(of: self.PushUser!) else {
             return
         }
-        self.table.FriendsList.removeAtIndex(index)
+        self.table.FriendsList.remove(at: index)
         self.table.tableView.reloadData()
     }
     
     override func awakeFromNib() {
         super.awakeFromNib()
         self.delegate = self
-        self.selectionStyle = .None
-        self.rightSwipeSettings.transition = MGSwipeTransition.Drag
-        self.Name.font = (UIScreen.mainScreen().bounds.width <= 320) ? UIFont(name: "AmericanTypewriter-Semibold", size: 25.0)! : UIFont(name: "AmericanTypewriter-Semibold", size: 35.0)!
-        self.Name.textColor = UIColor.whiteColor()
+        self.selectionStyle = .none
+        self.rightSwipeSettings.transition = MGSwipeTransition.drag
+        self.Name.font = (UIScreen.main.bounds.width <= 320) ? UIFont(name: "AmericanTypewriter-Semibold", size: 25.0)! : UIFont(name: "AmericanTypewriter-Semibold", size: 35.0)!
+        self.Name.textColor = UIColor.white
         self.Name.adjustsFontSizeToFitWidth = true
         self.Name.minimumScaleFactor = 0.5
         if self.Details != nil {
-            self.Details!.font = (UIScreen.mainScreen().bounds.width <= 320) ? UIFont(name: "AmericanTypewriter", size: 12.0)! : UIFont(name: "AmericanTypewriter", size: 17.0)!
-            self.Details!.textColor = UIColor.whiteColor().darkenedColor(0.1)
+            self.Details!.font = (UIScreen.main.bounds.width <= 320) ? UIFont(name: "AmericanTypewriter", size: 12.0)! : UIFont(name: "AmericanTypewriter", size: 17.0)!
+            self.Details!.textColor = UIColor.white.darkenedColor(0.1)
             self.Details!.adjustsFontSizeToFitWidth = true
-            self.Details!.lineBreakMode = NSLineBreakMode.ByTruncatingTail
+            self.Details!.lineBreakMode = NSLineBreakMode.byTruncatingTail
             self.Details!.minimumScaleFactor = 0.5
         }
     }
