@@ -163,6 +163,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
         }
         if !vc.isKind(of: GameViewController.self) {
             hambutton.increment()
+        } else {
+            if (type == "gameInvite" || type == "accepted") {
+                inviteRequestsbutton.badgeString = 0
+            }
         }
         if vc is RequestTable && (type == "gameInvite" || type == "accepted") {
             let vc = vc as! RequestTable

@@ -43,6 +43,10 @@ class GameViewController: UIViewController {
         view.GradLayer()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        hambutton.badgeString = 0
+    }
+    
     override func viewDidDisappear(_ animated: Bool) {
         sideMenuObj.gameControls = false
         if gameview != nil {

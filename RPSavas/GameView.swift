@@ -55,18 +55,29 @@ extension GameView: OTSessionDelegate, OTSubscriberKitDelegate, OTPublisherDeleg
             self.session?.disconnect(nil)
             self.session = nil
         }
-        let query = PFQuery(className: "ActiveSessions")
         if AppConfiguration.SessionID != nil {
-            query.whereKey("sessionID", equalTo: AppConfiguration.SessionID)
+            let query = PFQuery(className: "ActiveSessions")
+            query.whereKey("sessionID", equalTo: AppConfiguration.SessionID!)
+            query.getFirstObjectInBackground(block: {
+                object, error in
+                if error == nil {
+                    object?.deleteEventually()
+                }
+            })
         }
-        query.getFirstObjectInBackground(block: {
-            object, error in
-            if error == nil {
-                //TODO: - Remove comment to delete
-                //object?.deleteEventually()
+        for control in sideMenuNavigationController!.viewControllers {
+            if control is RequestTable {
+                let controller : RequestTable = control as! RequestTable
+                if controller.requestsList {
+                    controller.gameInvite = 0
+                } else {
+                    controller.accepted = 0
+                }
             }
-        })
-        sideMenuNavigationController!.popViewController(animated: true)
+        }
+        //sideMenuNavigationController!.popViewController(animated: true)
+        sideMenuNavigationController!.popToRootViewController(animated: true)
+        inviteRequestsbutton.badgeString = 0
         self.rematchView.hide()
     }
     
@@ -130,17 +141,7 @@ extension GameView: OTSessionDelegate, OTSubscriberKitDelegate, OTPublisherDeleg
     public func session(_ session: OTSession, didFailWithError error: OTError) {
         self.session = nil
         ProgressHUD.showError(error.localizedDescription)
-        if AppConfiguration.SessionID != nil {
-            let query = PFQuery(className: "ActiveSessions")
-            query.whereKey("sessionID", equalTo: AppConfiguration.SessionID)
-            query.getFirstObjectInBackground(block: {
-                object, error in
-                if error == nil {
-                    object?.deleteEventually()
-                }
-            })
-        }
-        sideMenuNavigationController!.popViewController(animated: true)
+        disconnect()
     }
     
     // MARK: - OTSubscriber delegate callbacks
@@ -261,9 +262,7 @@ extension GameView: OTSessionDelegate, OTSubscriberKitDelegate, OTPublisherDeleg
                 })
                 let AddMenu = UIAlertController(title:nil , message: nil, preferredStyle: .actionSheet)
                 let cancelAction = UIAlertAction(title: "Opponent has left", style: UIAlertActionStyle.cancel, handler: { (action:UIAlertAction!) -> Void in
-                    //self.session?.disconnect(nil)
-                    sideMenuNavigationController!.popViewController(animated: true)
-                    self.rematchView.hide()
+                    self.disconnect()
                 })
                 AddMenu.addAction(cancelAction)
                 if self.getParentViewController() != nil {
@@ -338,9 +337,6 @@ extension GameView: RematchDelegate {
 open class GameView: UIView {
 
     let rematchView: RematchView = RematchView.sharedInstance
-
-    //var myAudioDevice: OTAudioDeviceRingtone = OTAudioDeviceRingtone()
-    //var firstDevice: OTAudioDevice!
     
     lazy var countdown: CountdownView = {
         let count = CountdownView(frame: self.frame)
@@ -537,9 +533,6 @@ open class GameView: UIView {
     }
     
     func setUp() {
-        //firstDevice = OTAudioDeviceManager.currentAudioDevice()
-        //OTAudioDeviceManager.setAudioDevice(myAudioDevice)
-
         [userName,opponentName,viewPanel,vsPanel,userChoiceImage,Score,userScore,Dash,opponentScore,opponentChoiceImage,prevUserChoice,prevOpponentChoice,prevUserChoiceImage,lastUserChoiceImage,lastOpponentChoiceImage,prevOpponentChoiceImage,readyPlayButton,Rock,Paper,Scissors].forEach { (view) in
             self.addSubview(view)
         }
@@ -595,7 +588,7 @@ open class GameView: UIView {
             } else {
                 AppConfiguration.activeSession = nil
                 ProgressHUD.showError("Couldn't Create Game")
-                sideMenuNavigationController!.popViewController(animated: true)
+                self.disconnect()
             }
         })
     }

@@ -196,8 +196,9 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
             } else if self.UserRequest != nil {
                 self.UserRequest!.deleteInBackground(block: {success, error in
                     if error == nil {
-                        (self.table as! RequestTable).GameList.remove(at: self.index!.row)
-                        (self.table as! RequestTable).tableView.reloadData()
+                        let req: RequestTable = self.table as! RequestTable
+                        req.GameList.removeAll()
+                        req.tableView.reloadData()
                     }
                 })
             } else if self.User != nil {
@@ -349,6 +350,7 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
     }
     
     func setupAnimation(_ viewController: ParseTable) {
+        table = viewController
         let moveRight = CASpringAnimation(keyPath: "transform.translation.x")
         moveRight.fromValue = -self.contentView.frame.width
         moveRight.toValue = 0

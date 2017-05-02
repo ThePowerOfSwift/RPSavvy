@@ -105,18 +105,21 @@ class  RequestTable: ParseTable, MGSwipeTableCellDelegate {
         addInviteRequest()
         addTitleView()
         predicate = NSPredicate(format: "receiver = %@", PFUser.current()!)
-        if evapTitle.text != "Game Requests" {
-            evapTitle.evap("Game Requests")
-        }
         self.forceFetchData()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         if !self.requestsList {
             gameInvite = 0
+            if evapTitle.text != "Game Requests" {
+                evapTitle.evap("Game Requests")
+            }
             inviteRequestsbutton.badgeString = self.accepted
         } else {
             accepted = 0
+            if evapTitle.text != "Game Invites" {
+                evapTitle.evap("Game Invites")
+            }
             inviteRequestsbutton.badgeString = self.gameInvite
         }
     }
