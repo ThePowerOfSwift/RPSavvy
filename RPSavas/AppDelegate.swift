@@ -41,15 +41,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         self.window = UIWindow(frame: UIScreen.main.bounds)
         
-        
-        /*let configuration = ParseClientConfiguration {
-            $0.applicationId = "fHbRTxXoHWO5hvekgxjTtKHbzA3YfscitEOVV7IY"
-            $0.clientKey = "PH36lMNiNYsJIvmDwnWibJL90D6bJ0290b8pypWe"
-            $0.server = "https://rpsavas.herokuapp.com/parse"
-            $0.isLocalDatastoreEnabled = false // If you need to enable local data store
-         //mongodb://admin:c4d9cRBHB9ewKPYpvxRDHECJ@mongodb7.back4app.com:27017/a01c52002fcb419e8c44e386472c294b?ssl=true
-        }*/
-        
         let configuration = ParseClientConfiguration {
             $0.applicationId = "fHbRTxXoHWO5hvekgxjTtKHbzA3YfscitEOVV7IY"
             $0.clientKey = "NqYUndIvjTTMEwxBOfnfDqSkeAW2ozPUdmbPKAOz"
@@ -132,7 +123,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
     }
     
     func applicationWillTerminate(_ application: UIApplication) {
-        //PFUser.logOut()
+        
     }
     
     func configSettings() {
@@ -193,12 +184,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
             }
         } else {
             self.pushHandling(vc, alertMessage: alertMessage, type: type, dict: dict)
-        }/* else if vc is MessagesViewController {
-            let vc = vc as! MessagesViewController
-            if AppConfiguration.groupPass == (dict["messageID"] as? String)! {
-                vc.reloadMessages()
-            }
-        }*/
+        }
     }
     
     struct Dimensions {
@@ -218,66 +204,57 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
                     if image != nil {
                         let systemSoundID: SystemSoundID = 1003
                         AudioServicesPlaySystemSound (systemSoundID)
-                        /*if type == "chat" {
-                            let announcement: Announcement = Announcement(title: "RPSavvy", subtitle: "\(thisUser.Fullname()): \(alertMessage)", image: image, action: {
-                                Messages.startPrivateChat(thisUser, user2: PFUser.currentUser()!)
-                                return
-                            })
-                            Shout(announcement, to: vc)
-                        } else {*/
-                            let announcement: Announcement = Announcement(title: "RPSavvy", subtitle: alertMessage, image: image, action: {
-                                if type == "gameInvite" {
-                                    self.NavPush("RequestTable", completion: nil)
-                                } else if type == "accepted" {
-                                    PFQuery(className: "ActiveSessions").getObjectInBackground(withId: (dict["gameID"] as? String)!, block: {
-                                        object, error in
-                                        if error == nil {
-                                            AppConfiguration.activeSession = object!
-                                            AppConfiguration.activeSession!["callerTitle"] = "\(PFUser.current()!.Fullname()) joined your game"
-                                            AppConfiguration.activeSession!["Accepted"] = true
-                                            AppConfiguration.activeSession!.saveInBackground(block: {success, error in
-                                                if error == nil && success == true {
-                                                    if thisUser.objectId! != (object!["receiver"] as! PFUser).objectId! {
-                                                        let push = PFPush()
-                                                        let data = [
-                                                            "alert" : "\(PFUser.current()!.Fullname()) joined your game",
-                                                            "badge" : "Increment",
-                                                            "ObjID" : (PFUser.current()?.objectId!)! as String,
-                                                            "gameID" : object!.objectId!,
-                                                            "type" : "accepted"]
-                                                        let installQuery = PFInstallation.query()
-                                                        installQuery?.whereKey("User", equalTo: thisUser)
-                                                        push.setQuery(installQuery as? PFQuery<PFInstallation>)
-                                                        push.setData(data)
-                                                        push.sendInBackground(block: { success, error in
-                                                            if error != nil && success == false {
-                                                                ProgressHUD.showError("Error sending opponent notification")
-                                                            } else {
-                                                                sideMenuNavigationController!.NavPush("FriendGame") { _ in
-                                                                    
-                                                                }
+                        let announcement: Announcement = Announcement(title: "RPSavvy", subtitle: alertMessage, image: image, action: {
+                            if type == "gameInvite" {
+                                self.NavPush("RequestTable", completion: nil)
+                            } else if type == "accepted" {
+                                PFQuery(className: "ActiveSessions").getObjectInBackground(withId: (dict["gameID"] as? String)!, block: {
+                                    object, error in
+                                    if error == nil {
+                                        AppConfiguration.activeSession = object!
+                                        AppConfiguration.activeSession!["callerTitle"] = "\(PFUser.current()!.Fullname()) joined your game"
+                                        AppConfiguration.activeSession!["Accepted"] = true
+                                        AppConfiguration.activeSession!.saveInBackground(block: {success, error in
+                                            if error == nil && success == true {
+                                                if thisUser.objectId! != (object!["receiver"] as! PFUser).objectId! {
+                                                    let push = PFPush()
+                                                    let data = [
+                                                        "alert" : "\(PFUser.current()!.Fullname()) joined your game",
+                                                        "badge" : "Increment",
+                                                        "ObjID" : (PFUser.current()?.objectId!)! as String,
+                                                        "gameID" : object!.objectId!,
+                                                        "type" : "accepted"]
+                                                    let installQuery = PFInstallation.query()
+                                                    installQuery?.whereKey("User", equalTo: thisUser)
+                                                    push.setQuery(installQuery as? PFQuery<PFInstallation>)
+                                                    push.setData(data)
+                                                    push.sendInBackground(block: { success, error in
+                                                        if error != nil && success == false {
+                                                            ProgressHUD.showError("Error sending opponent notification")
+                                                        } else {
+                                                            sideMenuNavigationController!.NavPush("FriendGame") { _ in
+                                                                
                                                             }
-                                                        })
-                                                    } else {
-                                                        sideMenuNavigationController!.NavPush("FriendGame") { _ in
-                                                            
                                                         }
+                                                    })
+                                                } else {
+                                                    sideMenuNavigationController!.NavPush("FriendGame") { _ in
+                                                        
                                                     }
                                                 }
-                                                activityIndicatorView.stopAnimation()
-                                            })
-                                            //self.NavPush("RequestTable", completion: nil)
-                                        }
-                                    })
-                                } else if type == "friendInvite" {
-                                    self.NavPush("InviteTable", completion: nil)
-                                } else if type == "friendAccepted" {
-                                    self.NavPush("FriendsTable", completion: nil)
-                                }
-                                return
-                            })
-                            Shout(announcement, to: vc)
-                       // }
+                                            }
+                                            activityIndicatorView.stopAnimation()
+                                        })
+                                    }
+                                })
+                            } else if type == "friendInvite" {
+                                self.NavPush("InviteTable", completion: nil)
+                            } else if type == "friendAccepted" {
+                                self.NavPush("FriendsTable", completion: nil)
+                            }
+                            return
+                        })
+                        Shout(announcement, to: vc)
                     }
                 }
             }
@@ -287,39 +264,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("didFail! with error: \(error)")
     }
-    
-    /*func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject : AnyObject], fetchCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
-     handePush(userInfo as NSDictionary)
-     }
-     
-     func application(application: UIApplication, handleActionWithIdentifier identifier: String?, forLocalNotification notification: UILocalNotification, withResponseInfo responseInfo: [NSObject : AnyObject], completionHandler: () -> Void){
-     if identifier == "chatReply"{
-     if let responseText = responseInfo[UIUserNotificationActionResponseTypedTextKey] as? String {
-     NSLog(responseText)
-     //do your API call magic!!
-     }
-     }
-     completionHandler()
-     }
-     
-     
-     func application(application: UIApplication, handleActionWithIdentifier identifier: String?, forLocalNotification notification: UILocalNotification, completionHandler: () -> Void) {
-     switch identifier! {
-     case "chatReply":
-     print("Tapped Chat Reply")
-     case "chatDismiss":
-     print("Tapped Chat Dismiss")
-     default:
-     break
-     }
-     
-     completionHandler()
-     }
-     
-     func application(application: UIApplication, handleActionWithIdentifier identifier: String?, forRemoteNotification userInfo: [NSObject : AnyObject], completionHandler: () -> Void) {
-     //
-     }
-     */
     
     //MARK: - Push Handling
     
@@ -388,28 +332,5 @@ public struct AppConfiguration {
     public static var sideMenuText: UIColor =  UIColor.antiqueWhiteColor()
     public static var textAttributes: [String : AnyObject] = [NSForegroundColorAttributeName : UIColor.white, NSFontAttributeName : UIFont(name: "AmericanTypewriter", size: 18)!] as [String : AnyObject]
     public static var smallTextAttributes: [String : AnyObject] = [NSForegroundColorAttributeName : UIColor.lightGray, NSFontAttributeName : UIFont(name: "AmericanTypewriter", size: 14)!] as [String : AnyObject]
-    
-    /*public static func SendGamePush(user: PFUser) {
-        print("Sending Game Push!!!!")
-        // Find users near a given location
-        //let userQuery = PFUser.query()
-        //userQuery.whereKey("location", nearGeoPoint: stadiumLocation, withinMiles: 1)
-        // Find devices associated with these users
-        guard let pushQuery: PFQuery<PFInstallation> = PFInstallation.query() as? PFQuery<PFInstallation> else {
-            return
-        }
-        pushQuery.whereKey("User", equalTo: user)
-        
-        let push = PFPush()
-        push.setQuery(pushQuery)
-        push.setMessage("\(PFUser.current()!.Fullname()) sent you a game request!")
-        push.sendInBackground { (success, error) in
-            if error == nil && success == true {
-                print("Success: \(success)")
-            } else {
-                print("Error: \(error!.localizedDescription)")
-            }
-        }
-    }*/
     
 }
