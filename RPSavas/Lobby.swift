@@ -39,34 +39,9 @@ class Lobby: UIViewController {
             addSwipers()
             view.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(self.tappedMenu)))
             
-            /*let currentSettings: UIUserNotificationSettings = UIApplication.sharedApplication().currentUserNotificationSettings()!
-            let currentType: UIUserNotificationType = currentSettings.types
-            print("Type: \(currentType)")*/
             
             let application = UIApplication.shared
             if !application.isRegisteredForRemoteNotifications {
-                
-                /*let replyAction = UIMutableUserNotificationAction()
-                replyAction.title = "Reply"
-                replyAction.identifier = "chatReply"
-                replyAction.activationMode = .Background
-                replyAction.authenticationRequired = false
-                replyAction.behavior = .TextInput
-                
-                let dismissAction = UIMutableUserNotificationAction()
-                dismissAction.title = "Dismiss"
-                dismissAction.identifier = "chatDismiss"
-                dismissAction.activationMode = .Background
-                dismissAction.authenticationRequired = false
-                dismissAction.behavior = .Default
-                
-                //creating a category
-                let notificationCategory:UIMutableUserNotificationCategory = UIMutableUserNotificationCategory()
-                notificationCategory.identifier = "CHAT_CATEGORY"
-                notificationCategory .setActions([replyAction,dismissAction], forContext: UIUserNotificationActionContext.Default)
-                */
-                
-                
                 //MARK: - Adding new push capabilities
                 if #available(iOS 10.0, *) {
                     let center = UNUserNotificationCenter.current()
