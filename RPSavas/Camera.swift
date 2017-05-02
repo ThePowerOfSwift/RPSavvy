@@ -45,9 +45,6 @@ class Camera {
         
         cameraUI.allowsEditing = canEdit
         cameraUI.showsCameraControls = true
-        /* if target is MurphMessageController {
-         cameraUI.delegate = target as! MurphMessageController
-        } else */
         if target is ProfileViewController {
             cameraUI.delegate = target as! ProfileViewController
         }
@@ -77,9 +74,6 @@ class Camera {
         }
         
         imagePicker.allowsEditing = canEdit
-        /*if target is MurphMessageController {
-         imagePicker.delegate = target as! MurphMessageController
-         } else*/
         if target is ProfileViewController {
             imagePicker.delegate = target as! ProfileViewController
         }
@@ -110,9 +104,6 @@ class Camera {
         
         imagePicker.allowsEditing = canEdit
         
-        /*if target is MessagesViewController {
-            imagePicker.delegate = target as! MessagesViewController
-        }*/
         target.present(imagePicker, animated: true, completion: nil)
         
         return true

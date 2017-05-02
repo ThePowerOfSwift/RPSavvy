@@ -14,7 +14,6 @@ class LSViewController: ParseTable {
     
     override func viewDidLoad() {
         title = "Nearby"
-        //self.appTimer = NSTimer.scheduledTimerWithTimeInterval(60.0, target:self, selector:#selector(onTick(_:)), userInfo:nil, repeats:true)
         PFGeoPoint.geoPointForCurrentLocation(inBackground: { (point, error) in
             if error == nil {
                 PFUser.current()!["Location"] = point

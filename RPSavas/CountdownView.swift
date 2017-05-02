@@ -111,11 +111,8 @@ class CountdownView: UIView {
             self.counting = true
             self.setupAnimationGroup()
             self.vibrate()
-            //self.beepPlayer?.prepareToPlay()
             self.haloLayer.add(self.animationGroup, forKey: "pulse")
             self.animate()
-            //let url = NSBundle.mainBundle().URLForResource("Beep", withExtension: "m4a")!//URLForResource("Swoosh", withExtension: "wav")!//
-            //view.myAudioDevice.playRingtone(from: url, count: 3)
             self.timer = Timer.scheduledTimer(timeInterval: 1.0, target:self, selector:#selector(self.animate), userInfo:nil, repeats:true)
         }
     }
@@ -218,11 +215,6 @@ class CountdownView: UIView {
                         self.delegate!.countdownFinished(self)
                         self.removeFromSuperview()
                     }
-                    /*do {
-                        try AVAudioSession.sharedInstance().setActive(false)
-                    } catch let error as NSError {
-                        print(error.description)
-                    }*/
                     self.countdownLabel.transform = CGAffineTransform.identity
                     self.countdownLabel.alpha = 1.0
                     self.counting = false

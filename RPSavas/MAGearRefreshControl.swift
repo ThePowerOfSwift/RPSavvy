@@ -324,10 +324,10 @@ class MAMultiGearView : UIView {
     /// - parameter radius: Radius in pixel of the gear
     ///
     /// - returns: true if the gear was succesfully created, false otherwise (if at least one gear exists).
-    func addInitialGear(nbTeeth:UInt, color: UIColor, radius:CGFloat, gearStyle: MASingleGearView.MAGearStyle = .normal, nbBranches:UInt = 5) -> Bool {
+    func addInitialGear(nbTeeth:UInt, color: UIColor, radius:CGFloat, gearStyle: MASingleGearView.MAGearStyle = .normal, nbBranches:UInt = 5) {
         
         if arrayViews.count > 0  {
-            return false
+            return
         }
         
         diametralPitch = CGFloat(nbTeeth)/(2*radius)
@@ -342,7 +342,7 @@ class MAMultiGearView : UIView {
         arrayViews.append(view)
         self.insertSubview(view, belowSubview: leftBorderView)
         
-        return true
+        return
     }
     /// Add another gear to the view and link it to another already existing gear
     ///

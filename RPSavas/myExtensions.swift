@@ -11,6 +11,8 @@ import UIKit
 import ParseUI
 import Parse
 import CoreGraphics
+
+
 // FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
 // Consider refactoring the code to use the non-optional operators.
 fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
@@ -679,22 +681,6 @@ class loadingLabel: LTMorphingLabel {
     lazy var fontSize: CGFloat? = {
         return self.font.pointSize
     }()
-    
-    /* {
-        get {
-            return self.fontSize != nil ? super.font.pointSize : 35.0
-        }
-        set {
-            /*var value = newValue
-            if (UIScreen.mainScreen().bounds.width <= 320) {
-                value = (self.text!.characters.count >= 15) ? (self.text!.characters.count >= 20) ? 15.0 : 20.0 : 25.0
-            } else {
-                value = (self.text!.characters.count >= 15) ? (self.text!.characters.count >= 20) ? 20.0 : 25.0 : 35.0
-            }*/
-            self.font = UIFont(name: "AmericanTypewriter-Semibold", size: (newValue >= 10.0 && newValue != nil) ? newValue! : 10.0)!
-            self.setNeedsLayout()
-        }
-    }*/
     
     var variableWidth: Bool = true
     
@@ -1459,23 +1445,6 @@ extension CLLocationCoordinate2D {
     }
 }
 
-// MARK: - NSDate
-
-/*extension NSDate : Comparable {}
-
-public func ==(lhs: NSDate, rhs: NSDate) -> Bool {
-    return lhs === rhs || lhs.compare(rhs) == .orderedSame
-}
-
-public func <(lhs: Date, rhs: Date) -> Bool {
-    return lhs.compare(rhs) == .orderedAscending
-}
-
-public func >(lhs: Date, rhs: Date) -> Bool {
-    return lhs.compare(rhs) == .orderedDescending
-}*/
-
-
 extension Date {
     
     /// Returns the amount of years from another date
@@ -1764,15 +1733,6 @@ extension UIView {
         })
     }
     
-    /*
-    func getColors(color: UIColor) {
-        let grads = UIColor(gradientStyle: UIGradientStyle.TopToBottom, withFrame: self.frame, andColors: [color])
-        //(gradientStyle:UIGradientStyle, withFrame:CGRect, andColors:[UIColor])
-        //let color = GradientColor(UIGradientStyle.TopToBottom, frame: self.frame, colors: [color])
-        //print("Gradient: \(grads)")
-        //print("Colors: \(color)")
-        //backgroundColor = grads
-    }*/
 }
 
 // MARK: - GradientButton
@@ -1915,16 +1875,6 @@ extension UIResponder {
         }
     }
     
-    /*typealias MessagePushClosure = (MurphMessageController) -> Void
-    
-    func MessagePush(completion: MessagePushClosure?) {
-        let viewController: MurphMessageController = UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier("MurphMessageController") as! MurphMessageController
-        sideMenuNavigationController!.pushViewController(viewController, animated: true)
-        if completion != nil {
-            completion!(viewController)
-        }
-    }*/
-    
     func goToLobby() {
         appDelegate.window?.rootViewController = kConstantObj.SetIntialMainViewController("Lobby")
     }
@@ -1987,138 +1937,6 @@ extension UIColor{
         let b = CGFloat(rgb & 0xFF) / 255.0
         return UIColor(red: r, green: g, blue: b, alpha: alpha)
     }
-    
-    /*
-     
-     
-     //primary 0.667 -> 0.467 , 0.841 -> 0.754 , 0.75 -> 0.543 , 0.592 -> 0.5 , 0.592 -> 0.388
-     
-     //secondary 0.152 -> 0.005 , 0.566 -> 0.562 , 0.345 -> 0.212 , 0.0 -> 0.152 , 0.0 -> 0.0
-     
-     //last 0.15 -> 0.009 , 0.566 -> 0.562 , 0.341 -> 0.212 , 0.0 -> 0.153 , 0.0 -> 0.004
-     
-     //let grads = UIColor(gradientStyle: UIGradientStyle.TopToBottom, withFrame: self.frame, andColors: [])
-     //(gradientStyle:UIGradientStyle, withFrame:CGRect, andColors:[UIColor])
-     //let color = GradientColor(gradientStyle, frame, colors)
-     
-     
-     //lastGrad + 0.013 , + 0.013 , - 0.208 , - 0.553
-     //secondGrad + 0.416 , + 0.191 , - 0.15 , - 0.15
-     //primaryGrad + 0.174 , + 0.083 , - 0.075 , - 0.075
-     
-     //red: 0.553,0.566,0.566,0.345,0.0
-     //green: 0.15,0.566,0.341,0.0,0.0
-     //blue: 0.667,0.841,0.75,0.592,0.592
-     
-     //etGlobalThemeUsingPrimaryColor:(UIColor *)color withContentStyle:(UIContentStyle)contentStyle];
-     
-     //primary 0.667 -> 0.841 -> 0.75 -> 0.592 -> 0.592
-     //primary 0.467 -> 0.754 -> 0.543 -> 0.5 -> 0.388
-     
-     //UIColor(red: red, green: green, blue: blue  , alpha: 1.0).CGColor
-     
-     
-     UIColor(red: 0.553, green: 0.855, blue: 0.969, alpha: 1.0).CGColor
-     UIColor(red: 0.566, green: 0.855, blue: 0.969, alpha: 1.0).CGColor
-     UIColor(red: 0.553, green: 0.855, blue: 0.969, alpha: 1.0).CGColor
-     UIColor(red: 0.553, green: 0.855, blue: 0.969, alpha: 1.0).CGColor
-     UIColor(red: 0.553, green: 0.855, blue: 0.969, alpha: 1.0).CGColor
-     
-     UIColor(red: 0.412, green: 0.855, blue: 0.969, alpha: 1.0).CGColor
-     UIColor(red: 0.549, green: 0.855, blue: 0.969, alpha: 1.0).CGColor
-     UIColor(red: 0.553, green: 0.855, blue: 0.969, alpha: 1.0).CGColor
-     UIColor(red: 0.553, green: 0.855, blue: 0.969, alpha: 1.0).CGColor
-     UIColor(red: 0.553, green: 0.855, blue: 0.969, alpha: 1.0).CGColor
-     
-     //highlighted difference
-     //primary - 0.2 ,primary - 0.087 ,primary - 0.207 ,primary - 0.092 ,primary - 0.204
-     
-     //secondary - 0.147 ,secondary - 0.004 ,secondary - 0.133 ,secondary + 0.152 , secondary
-     
-     //last - 0.141 ,last - 0.004 ,last - 0.129 ,last + 0.153 ,last + 0.004
-     
-     func colorGrad() -> [UIColor] {
-     let red = self.red()
-     let green = self.green()
-     let blue = self.blue()
-     var gradColors: [UIColor] = [UIColor]()
-     var highlightedColor: [UIColor] = [UIColor]()
-     var primary: CGFloat = 0.0
-     var secondary: CGFloat = 0.0
-     var last: CGFloat = 0.0
-     var order = "RGB"
-     if red > green && red > blue {
-     if green > blue {
-     order = "RGB"
-     primary = red
-     secondary = green
-     last = blue
-     } else {
-     order = "RBG"
-     primary = red
-     secondary = blue
-     last = green
-     }
-     } else if green > red && green > blue {
-     if red > blue {
-     order = "GRB"
-     primary = green
-     secondary = red
-     last = blue
-     } else {
-     order = "GBR"
-     primary = green
-     secondary = blue
-     last = red
-     }
-     } else if blue > red && green < blue {
-     if green > red {
-     order = "BGR"
-     primary = blue
-     secondary = green
-     last = red
-     } else {
-     order = "BRG"
-     primary = blue
-     secondary = red
-     last = green
-     }
-     }
-     for i in 0..<5 {
-     switch i {
-     case 0: gradColors.append(self.colors(primary, secondary: secondary, last: last, order: order))
-     case 1: gradColors.append(self.colors(primary + 0.174, secondary: secondary + 0.416, last: last + 0.013, order: order))
-     case 2: gradColors.append(self.colors(primary + 0.083, secondary: secondary + 0.191, last: last + 0.013, order: order))
-     case 3: gradColors.append(self.colors(primary - 0.075, secondary: secondary - 0.15, last: last - 0.208, order: order))
-     case 4: gradColors.append(self.colors(primary - 0.075, secondary: secondary - 0.15, last: last - 0.553, order: order))
-     default: gradColors.append(self.colors(primary, secondary: secondary, last: last, order: order))
-     }
-     }
-     return gradColors
-     /*for i in 0..<gradColors.count {
-     switch i {
-     case 0:
-     let color = gradColors[0]
-     highlightedColor.append(self.colors(color.red() - 0.2, secondary: secondary + 0.416, last: last + 0.013, order: order))
-     case 1: gradColors.append(self.colors(primary + 0.174, secondary: secondary + 0.416, last: last + 0.013, order: order))
-     case 2: gradColors.append(self.colors(primary + 0.083, secondary: secondary + 0.191, last: last + 0.013, order: order))
-     case 3: gradColors.append(self.colors(primary - 0.075, secondary: secondary - 0.15, last: last - 0.208, order: order))
-     case 4: gradColors.append(self.colors(primary - 0.075, secondary: secondary - 0.15, last: last - 0.553, order: order))
-     }
-     }*/
-     }
-     
-     func colors(primary: CGFloat, secondary: CGFloat, last: CGFloat, order: String) -> UIColor {
-     switch order {
-     case "RGB": return UIColor(red: primary, green: secondary, blue: last, alpha: 1.0)//.CGColor
-     case "RBG": return UIColor(red: primary, green: last, blue: secondary, alpha: 1.0)//.CGColor
-     case "GRB": return UIColor(red: secondary, green: primary, blue: last, alpha: 1.0)//.CGColor
-     case "GBR": return UIColor(red: last, green: primary, blue: secondary, alpha: 1.0)//.CGColor
-     case "BGR": return UIColor(red: last, green: secondary, blue: primary, alpha: 1.0)//.CGColor
-     case "BRG": return UIColor(red: secondary, green: last, blue: primary, alpha: 1.0)//.CGColor
-     default: return UIColor(red: primary, green: secondary, blue: last, alpha: 1.0)//.CGColor
-     }
-     }*/
 }
 
 
