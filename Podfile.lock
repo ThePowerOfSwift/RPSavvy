@@ -37,20 +37,20 @@ PODS:
     - TwitterCore (= 2.4.0)
 
 DEPENDENCIES:
-  - Crashlytics (= 3.8.2)
-  - Fabric (= 1.6.8)
-  - FBSDKCoreKit (= 4.15.1)
-  - FBSDKLoginKit (= 4.15.1)
-  - FBSDKShareKit (= 4.15.1)
-  - JSQSystemSoundPlayer (= 4.4.0)
-  - OpenTok (= 2.9.0)
-  - Parse (= 1.14.4)
-  - ParseFacebookUtilsV4 (= 1.11.1)
-  - ParseTwitterUtils (= 1.11.0)
-  - ParseUI (= 1.2.0)
+  - Crashlytics
+  - Fabric
+  - FBSDKCoreKit
+  - FBSDKLoginKit
+  - FBSDKShareKit
+  - JSQSystemSoundPlayer
+  - OpenTok
+  - Parse
+  - ParseFacebookUtilsV4
+  - ParseTwitterUtils
+  - ParseUI
   - PeekPop (~> 0.1)
-  - TwitterCore (= 2.4.0)
-  - TwitterKit (= 2.4.0)
+  - TwitterCore
+  - TwitterKit
 
 SPEC CHECKSUMS:
   Bolts: 8a7995239dbe724f9cba2248b766d48b7ebdd322
@@ -69,6 +69,6 @@ SPEC CHECKSUMS:
   TwitterCore: a139904c80805ad3dde9eef1100704f96f646d1d
   TwitterKit: 1cf9742edf9d182c1518cfdd6aaac0dfe313b38b
 
-PODFILE CHECKSUM: 3380fa2199cb5ddb3e10317f4c021c8158660e6e
+PODFILE CHECKSUM: d6c8e0dece8f51abc1a71e9be20231bc6992f589
 
 COCOAPODS: 1.2.1.rc.1

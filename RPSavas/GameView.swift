@@ -57,12 +57,13 @@ extension GameView: OTSessionDelegate, OTSubscriberKitDelegate, OTPublisherDeleg
         }
         let query = PFQuery(className: "ActiveSessions")
         if AppConfiguration.SessionID != nil {
-            query.whereKey("sessionID", equalTo: AppConfiguration.SessionID!)
+            query.whereKey("sessionID", equalTo: AppConfiguration.SessionID)
         }
         query.getFirstObjectInBackground(block: {
             object, error in
             if error == nil {
-                object?.deleteEventually()
+                //TODO: - Remove comment to delete
+                //object?.deleteEventually()
             }
         })
         sideMenuNavigationController!.popViewController(animated: true)
@@ -131,7 +132,7 @@ extension GameView: OTSessionDelegate, OTSubscriberKitDelegate, OTPublisherDeleg
         ProgressHUD.showError(error.localizedDescription)
         if AppConfiguration.SessionID != nil {
             let query = PFQuery(className: "ActiveSessions")
-            query.whereKey("sessionID", equalTo: AppConfiguration.SessionID!)
+            query.whereKey("sessionID", equalTo: AppConfiguration.SessionID)
             query.getFirstObjectInBackground(block: {
                 object, error in
                 if error == nil {
@@ -575,11 +576,28 @@ open class GameView: UIView {
             if self.type != nil {
                 switch self.type! {
                 case .random: self.sessionQuery()
-                case .nearby: self.session = OTSession(apiKey: AppConfiguration.ApiKey, sessionId: AppConfiguration.SessionID!, delegate: self)
-                case .friend: self.session = OTSession(apiKey: AppConfiguration.ApiKey, sessionId: AppConfiguration.SessionID!, delegate: self)
+                case .nearby: self.session = OTSession(apiKey: AppConfiguration.ApiKey, sessionId: AppConfiguration.SessionID, delegate: self)
+                case .friend: self.session = OTSession(apiKey: AppConfiguration.ApiKey, sessionId: AppConfiguration.SessionID, delegate: self)
                 }
             }
         }
+    }
+    
+    func createQuickGame() {
+        let activeSession:PFObject = PFObject(className: "ActiveSessions")
+        activeSession["caller"] = PFUser.current()!
+        activeSession["receiverID"] = "Quick"
+        activeSession["callerTitle"] = "\(PFUser.current()!.Fullname()) sent you a game request!"
+        activeSession.saveInBackground(block: {(succeeded: Bool?, error: Error?) -> Void in
+            if error == nil {
+                AppConfiguration.activeSession = activeSession
+                self.session = OTSession(apiKey: AppConfiguration.ApiKey, sessionId: AppConfiguration.SessionID, delegate: self)
+            } else {
+                AppConfiguration.activeSession = nil
+                ProgressHUD.showError("Couldn't Create Game")
+                sideMenuNavigationController!.popViewController(animated: true)
+            }
+        })
     }
     
     func sessionQuery() {
@@ -590,22 +608,9 @@ open class GameView: UIView {
         query.getFirstObjectInBackground { (object, error) in
             if error == nil && object != nil {
                 AppConfiguration.activeSession = object!
-                self.session = OTSession(apiKey: AppConfiguration.ApiKey, sessionId: AppConfiguration.SessionID!, delegate: self)
+                self.session = OTSession(apiKey: AppConfiguration.ApiKey, sessionId: AppConfiguration.SessionID, delegate: self)
             } else {
-                let activeSession:PFObject = PFObject(className: "ActiveSessions")
-                activeSession["caller"] = PFUser.current()!
-                activeSession["receiverID"] = "Quick"
-                activeSession["callerTitle"] = "\(PFUser.current()!.Fullname()) sent you a game request!"
-                activeSession.saveInBackground(block: {(succeeded: Bool?, error: Error?) -> Void in
-                    if error == nil {
-                        AppConfiguration.activeSession = activeSession
-                        self.session = OTSession(apiKey: AppConfiguration.ApiKey, sessionId: AppConfiguration.SessionID!, delegate: self)
-                    } else {
-                        AppConfiguration.activeSession = nil
-                        ProgressHUD.showError("Couldn't Create Game")
-                        sideMenuNavigationController!.popViewController(animated: true)
-                    }
-                })
+                self.createQuickGame()
             }
         }
     }

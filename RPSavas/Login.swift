@@ -344,7 +344,7 @@ class Login: UIViewController, UITextFieldDelegate, BEMCheckBoxDelegate {
         user.signUpInBackground {
             (succeeded: Bool, error: Error?) -> Void in
             if let error = error {
-                let errorString: String = ((error as! NSError).userInfo["error"] as? String)!
+                let errorString: String = ((error as NSError).userInfo["error"] as? String)!
                 activityIndicatorView.stopAnimation()
                 ProgressHUD.showError(errorString)
             } else {

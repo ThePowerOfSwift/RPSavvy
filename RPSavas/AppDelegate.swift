@@ -17,7 +17,7 @@ import Crashlytics
 import ParseTwitterUtils
 import UIKit
 import Foundation
-
+import UserNotifications
 
 let facebookLogin = FBSDKLoginManager()
 
@@ -41,12 +41,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         self.window = UIWindow(frame: UIScreen.main.bounds)
         
+        
+        /*let configuration = ParseClientConfiguration {
+            $0.applicationId = "fHbRTxXoHWO5hvekgxjTtKHbzA3YfscitEOVV7IY"
+            $0.clientKey = "PH36lMNiNYsJIvmDwnWibJL90D6bJ0290b8pypWe"
+            $0.server = "https://rpsavas.herokuapp.com/parse"
+            $0.isLocalDatastoreEnabled = false // If you need to enable local data store
+         //mongodb://admin:c4d9cRBHB9ewKPYpvxRDHECJ@mongodb7.back4app.com:27017/a01c52002fcb419e8c44e386472c294b?ssl=true
+        }*/
+        
         let configuration = ParseClientConfiguration {
             $0.applicationId = "fHbRTxXoHWO5hvekgxjTtKHbzA3YfscitEOVV7IY"
             $0.clientKey = "NqYUndIvjTTMEwxBOfnfDqSkeAW2ozPUdmbPKAOz"
             $0.server = "https://parseapi.back4app.com"
             $0.isLocalDatastoreEnabled = false // If you need to enable local data store
         }
+        
         Parse.initialize(with: configuration)
         PFUser.enableRevocableSessionInBackground() // If you're using Legacy Sessions
         
@@ -62,18 +72,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
         } else {
             return performShortcutDelegate
         }
-        if let dict: NSDictionary = launchOptions as! NSDictionary {
-            handePush(dict)
+        /*guard let dict: NSDictionary = launchOptions as NSDictionary? else {
+            return FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions: launchOptions)
+         }
+         handePush(dict)*/
+        if launchOptions != nil {
+            handePush(launchOptions!)
         }
         return FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions: launchOptions)
     }
     
+    
     func applicationDidBecomeActive(_ application: UIApplication) {
         let installation = PFInstallation.current()
+        if PFUser.current() != nil {
+            installation!["User"] = PFUser.current()!
+        }
         installation!.badge = 0
         installation!.saveInBackground()
         guard let shortcut = shortcutItem else { return }
-        handleShortcut(shortcut)
+        _ = handleShortcut(shortcut)
         self.shortcutItem = nil
         FBSDKAppEvents.activateApp()
     }
@@ -132,11 +150,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let installation = PFInstallation.current()
         installation!.setDeviceTokenFrom(deviceToken)
-        installation!["User"] = PFUser.current()
+        if PFUser.current() != nil {
+            installation!["User"] = PFUser.current()
+        }
         installation!.saveInBackground()
     }
     
-    func handePush(_ dict: NSDictionary) {
+    func handePush(_ dict: [AnyHashable : Any]) {
+        let ap = (dict["aps"] as? NSDictionary)!
+        let type: String = (dict["type"] as? String)!
+        let alertMessage: String = (ap["alert"] as? String)!
+        PFPush.handle(dict)
+    }
+    /*func handePush(_ dict: NSDictionary) {
         let ap = (dict["aps"] as? NSDictionary)!
         let type: String = (dict["type"] as? String)!
         let alertMessage: String = (ap["alert"] as? String)!
@@ -182,7 +208,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
                 vc.reloadMessages()
             }
         }*/
-    }
+    }*/
     
     struct Dimensions {
         static let height: CGFloat = 24
@@ -307,45 +333,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
     //MARK: - Push Handling
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        let UserInfo: NSDictionary = userInfo as NSDictionary
-        /*guard let aps: NSDictionary = userInfo["aps"] as? NSDictionary else {
-            completionHandler(.NoData)
-            return
-        }
-        guard let contentAvailable: Int = aps["content-available"] as? Int else {
-            handePush(UserInfo)
-            return
-        }
-        print("Content Available: \(contentAvailable)")
-        if contentAvailable == 1 {
-            guard let pushType: String = UserInfo["type"] as? String  else {
-                handePush(UserInfo)
-                return
-            }
-            if pushType == "chatTyping" {
-                guard let messagesVC: MessagesViewController = sideMenuNavigationController!.topViewController as? MessagesViewController else {
-                    completionHandler(.NoData)
-                    return
-                }
-                if AppConfiguration.groupPass == UserInfo["messageID"] as! String {
-                    messagesVC.showUserTypingIndicator()
-                }
-                completionHandler(.NoData)
-            } else if pushType == "chatTypingEnd" {
-                guard let messagesVC: MessagesViewController = sideMenuNavigationController!.topViewController as? MessagesViewController else {
-                    completionHandler(.NoData)
-                    return
-                }
-                if AppConfiguration.groupPass == UserInfo["messageID"] as! String {
-                    messagesVC.hideUserTypingIndicator()
-                }
-                completionHandler(.NoData)
-            }
-        } else  {
-            handePush(UserInfo)
-            completionHandler(.NewData)
-        }*/
-        handePush(UserInfo)
+        handePush(userInfo)
         completionHandler(.newData)
     }
     
@@ -405,5 +393,28 @@ public struct AppConfiguration {
     public static var sideMenuText: UIColor =  UIColor.antiqueWhiteColor()
     public static var textAttributes: [String : AnyObject] = [NSForegroundColorAttributeName : UIColor.white, NSFontAttributeName : UIFont(name: "AmericanTypewriter", size: 18)!] as [String : AnyObject]
     public static var smallTextAttributes: [String : AnyObject] = [NSForegroundColorAttributeName : UIColor.lightGray, NSFontAttributeName : UIFont(name: "AmericanTypewriter", size: 14)!] as [String : AnyObject]
+    
+    /*public static func SendGamePush(user: PFUser) {
+        print("Sending Game Push!!!!")
+        // Find users near a given location
+        //let userQuery = PFUser.query()
+        //userQuery.whereKey("location", nearGeoPoint: stadiumLocation, withinMiles: 1)
+        // Find devices associated with these users
+        guard let pushQuery: PFQuery<PFInstallation> = PFInstallation.query() as? PFQuery<PFInstallation> else {
+            return
+        }
+        pushQuery.whereKey("User", equalTo: user)
+        
+        let push = PFPush()
+        push.setQuery(pushQuery)
+        push.setMessage("\(PFUser.current()!.Fullname()) sent you a game request!")
+        push.sendInBackground { (success, error) in
+            if error == nil && success == true {
+                print("Success: \(success)")
+            } else {
+                print("Error: \(error!.localizedDescription)")
+            }
+        }
+    }*/
     
 }

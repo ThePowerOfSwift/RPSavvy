@@ -363,13 +363,14 @@ extension PFImageView {
         self.backgroundColor = UIColor.clear
         self.layer.borderColor = color != nil ? color!.cgColor : UIColor.white.cgColor
         self.layer.masksToBounds = true
+        if user["fullname"] != nil {
+            self.imageWithString(user["fullname"] as! String, color: .charcoalColor(), circular: false, fontAttributes: nil)
+        }
         if user["picture"] != nil {
             self.file = user["picture"] as? PFFile
             self.load(inBackground: { (image, error) in
                 if image == nil {
-                    if user["fullname"] != nil {
-                        self.imageWithString(user["fullname"] as! String, color: .charcoalColor(), circular: false, fontAttributes: nil)
-                    } else {
+                    if user["fullname"] == nil {
                         self.imageWithString("R P S", color: .charcoalColor(), circular: false, fontAttributes: nil)
                     }
                 }
@@ -585,8 +586,6 @@ extension PFUser {
         }
     }
     
-
-    
     
     func imageWithString(_ word: String, color: UIColor, bounds: CGRect) -> UIImage  {
         var imageViewString: String = ""
@@ -662,6 +661,7 @@ extension PFUser {
                 activeSession.saveInBackground(block: {(succeeded: Bool?, error: Error?) -> Void in
                     if error == nil {
                         AppConfiguration.activeSession = activeSession
+                        //AppConfiguration.SendGamePush(user: self)
                         completion(true)
                     } else {
                         AppConfiguration.activeSession = nil
@@ -1131,11 +1131,11 @@ class BadgeView: UIView {
     // MARK: - Visibility
     
     func show() {
-        /*if #available(iOS 10.0, *) {
-            let timing:UICubicTimingParameters = UICubicTimingParameters(animationCurve: UIViewAnimationCurve.EaseInOut)
+        if #available(iOS 10.0, *) {
+            let timing:UICubicTimingParameters = UICubicTimingParameters(animationCurve: UIViewAnimationCurve.easeInOut)
             let animator:UIViewPropertyAnimator = UIViewPropertyAnimator(duration: 0.66, timingParameters: timing)
             animator.addAnimations {
-                self.hidden = false
+                self.isHidden = false
                 self.frame = self.frame.offsetBy(dx: 0, dy: -3)
             }
             animator.addCompletion { (_) in
@@ -1151,14 +1151,14 @@ class BadgeView: UIView {
                 animator.startAnimation()
             }
             animator.startAnimation()
-        } else {*/
+        } else {
             self.isHidden = false
-        //}
+        }
     }
     
     func hide() {
-        /*if #available(iOS 10.0, *) {
-            let timing:UICubicTimingParameters = UICubicTimingParameters(animationCurve: UIViewAnimationCurve.EaseInOut)
+        if #available(iOS 10.0, *) {
+            let timing:UICubicTimingParameters = UICubicTimingParameters(animationCurve: UIViewAnimationCurve.easeInOut)
             let animator:UIViewPropertyAnimator = UIViewPropertyAnimator(duration: 0.66, timingParameters: timing)
             animator.addAnimations {
                 self.frame = self.frame.offsetBy(dx: 0, dy: -3)
@@ -1172,16 +1172,16 @@ class BadgeView: UIView {
                         self.frame = self.frame.offsetBy(dx: 0, dy: -3)
                     }
                     animator.addCompletion { (_) in
-                        self.hidden = true
+                        self.isHidden = true
                     }
                     animator.startAnimation()
                 }
                 animator.startAnimation()
             }
             animator.startAnimation()
-        } else {*/
+        } else {
             self.isHidden = true
-        //}
+        }
     }
 }
 

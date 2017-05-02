@@ -13,7 +13,7 @@ import FBSDKCoreKit
 import FBSDKLoginKit
 import Parse
 import ParseUI
-
+import UserNotifications
 
 var badgeview: BadgeView = BadgeView()
 
@@ -28,6 +28,7 @@ class Lobby: UIViewController {
     }
     
     override func viewDidLoad() {
+        
         navigationItem.title = "RPSavvy"
         AppConfiguration.scheme = AppConfiguration.startingColor.colorScheme(Color.ColorScheme.monochromatic)
         AppConfiguration.schemeSame = AppConfiguration.startingColor.colorScheme(Color.ColorScheme.analagous)
@@ -64,17 +65,34 @@ class Lobby: UIViewController {
                 notificationCategory.identifier = "CHAT_CATEGORY"
                 notificationCategory .setActions([replyAction,dismissAction], forContext: UIUserNotificationActionContext.Default)
                 */
-                let settings = UIUserNotificationSettings(types: [.alert, .sound, .badge], categories: nil)//[notificationCategory])
-                application.registerForRemoteNotifications()
-                application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
-                application.registerUserNotificationSettings(settings)
+                
+                
+                //MARK: - Adding new push capabilities
+                if #available(iOS 10.0, *) {
+                    let center = UNUserNotificationCenter.current()
+                    let options: UNAuthorizationOptions = [.alert, .badge, .sound]
+                    center.requestAuthorization(options: options, completionHandler: { authorized, error in
+                        if authorized {
+                            application.registerForRemoteNotifications()
+                        }
+                    })
+                } else {
+                    // Fallback on earlier versions
+                    
+                    let settings = UIUserNotificationSettings(types: [.alert, .sound, .badge], categories: nil)//[notificationCategory])
+                    application.registerForRemoteNotifications()
+                    application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
+                    application.registerUserNotificationSettings(settings)
+                }
+                
+                
             }
             self.signInButton.isHidden = true
         } else {
             self.signInButton.isHidden = false
         }
     }
-    
+ 
     @IBAction func TappedLoginSignup(_ sender: GradientButton) {
         sender.toggleAnimation() {
             self.NavPush("Login", completion: nil)
