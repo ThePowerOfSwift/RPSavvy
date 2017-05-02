@@ -72,13 +72,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
         } else {
             return performShortcutDelegate
         }
-        /*guard let dict: NSDictionary = launchOptions as NSDictionary? else {
+        guard let dict: NSDictionary = launchOptions as NSDictionary? else {
             return FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions: launchOptions)
-         }
-         handePush(dict)*/
-        if launchOptions != nil {
-            handePush(launchOptions!)
         }
+        handePush(dict)
         return FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions: launchOptions)
     }
     
@@ -156,13 +153,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
         installation!.saveInBackground()
     }
     
-    func handePush(_ dict: [AnyHashable : Any]) {
-        let ap = (dict["aps"] as? NSDictionary)!
-        let type: String = (dict["type"] as? String)!
-        let alertMessage: String = (ap["alert"] as? String)!
-        PFPush.handle(dict)
-    }
-    /*func handePush(_ dict: NSDictionary) {
+    func handePush(_ dict: NSDictionary) {
         let ap = (dict["aps"] as? NSDictionary)!
         let type: String = (dict["type"] as? String)!
         let alertMessage: String = (ap["alert"] as? String)!
@@ -208,7 +199,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
                 vc.reloadMessages()
             }
         }*/
-    }*/
+    }
     
     struct Dimensions {
         static let height: CGFloat = 24
@@ -333,7 +324,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
     //MARK: - Push Handling
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        handePush(userInfo)
+        guard let dict: NSDictionary = userInfo as NSDictionary? else {
+            completionHandler(.newData)
+            return 
+        }
+        handePush(dict)
         completionHandler(.newData)
     }
     
