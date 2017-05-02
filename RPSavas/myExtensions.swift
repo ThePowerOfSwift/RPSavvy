@@ -35,8 +35,6 @@ fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
   }
 }
 
-
-
 // MARK: - String
 
 extension String {
@@ -657,11 +655,10 @@ extension PFUser {
                 activeSession["caller"] = PFUser.current()!
                 activeSession["receiver"] = self
                 activeSession["callerTitle"] = "\(PFUser.current()!.Fullname()) sent you a game request!"
-                //activeSession["Accepted"] = false
+                activeSession["Accepted"] = false
                 activeSession.saveInBackground(block: {(succeeded: Bool?, error: Error?) -> Void in
                     if error == nil {
                         AppConfiguration.activeSession = activeSession
-                        //AppConfiguration.SendGamePush(user: self)
                         completion(true)
                     } else {
                         AppConfiguration.activeSession = nil

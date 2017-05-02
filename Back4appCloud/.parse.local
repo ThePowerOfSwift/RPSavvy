@@ -1,0 +1,10 @@
+{
+  "applications": {
+    "RPSavvy": {
+      "applicationId": "fHbRTxXoHWO5hvekgxjTtKHbzA3YfscitEOVV7IY"
+    },
+    "_default": {
+      "link": "RPSavvy"
+    }
+  }
+}

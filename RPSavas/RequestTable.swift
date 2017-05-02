@@ -41,18 +41,9 @@ extension RequestTable {
     
     func tappedInviteRequest(_ sender: MIBadgeButton) {
         self.GameList.removeAll()
-        requestsList = !requestsList
-        if requestsList {
-            PFUser.current()!["accepted"] = 0
-        } else {
-            PFUser.current()!["gameInvite"] = 0
-        }
-        PFUser.current()!.saveInBackground()
         inviteRequestsbutton.badgeString = 0
         sender.spin() {
-            self.predicate = self.requestsList ? NSPredicate(format: "caller = %@", PFUser.current()!) : NSPredicate(format: "receiver = %@", PFUser.current()!)
-            evapTitle.evap(self.requestsList ? "Game Invites" : "Game Requests")
-            self.forceFetchData()
+            self.requestsList = !self.requestsList
         }
     }
 }
@@ -61,26 +52,73 @@ class  RequestTable: ParseTable, MGSwipeTableCellDelegate {
     
     var predicate: NSPredicate = NSPredicate(format: "receiver = %@", PFUser.current()!)
     var GameList: [PFObject] = [PFObject]()
-    var requestsList: Bool = false
+    var requestsList: Bool = false {
+        didSet {
+            if self.requestsList {
+                self.accepted = 0
+                self.predicate = NSPredicate(format: "caller = %@", PFUser.current()!)
+                if evapTitle.text != "Game Invites" {
+                    evapTitle.evap("Game Invites")
+                }
+                inviteRequestsbutton.badgeString = self.gameInvite
+            } else {
+                self.gameInvite = 0
+                self.predicate = NSPredicate(format: "receiver = %@", PFUser.current()!)
+                if evapTitle.text != "Game Requests" {
+                    evapTitle.evap("Game Requests")
+                }
+                inviteRequestsbutton.badgeString = self.accepted
+            }
+            self.forceFetchData()
+        }
+    }
+    
+    var accepted: Int {
+        get {
+            if PFUser.current()!["accepted"] != nil {
+                return PFUser.current()!["accepted"] as! Int
+            } else {
+                return 0
+            }
+        }
+        set {
+            PFUser.current()!["accepted"] = newValue
+            PFUser.current()!.saveInBackground()
+        }
+    }
+    
+    var gameInvite: Int {
+        get {
+            if PFUser.current()!["gameInvite"] != nil {
+                return PFUser.current()!["gameInvite"] as! Int
+            } else {
+                return 0
+            }
+        }
+        set {
+            PFUser.current()!["gameInvite"] = newValue
+            PFUser.current()!.saveInBackground()
+        }
+    }
     
     override func viewDidLoad() {
         addInviteRequest()
         addTitleView()
+        predicate = NSPredicate(format: "receiver = %@", PFUser.current()!)
+        if evapTitle.text != "Game Requests" {
+            evapTitle.evap("Game Requests")
+        }
+        self.forceFetchData()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         if !self.requestsList {
-            self.predicate = NSPredicate(format: "receiver = %@", PFUser.current()!)
-            PFUser.current()!["gameInvite"] = 0
-            PFUser.current()!.saveInBackground()
-            inviteRequestsbutton.badgeString = PFUser.current()!["accepted"] as! Int
+            gameInvite = 0
+            inviteRequestsbutton.badgeString = self.accepted
         } else {
-            self.predicate = NSPredicate(format: "caller = %@", PFUser.current()!)
-            PFUser.current()!["accepted"] = 0
-            PFUser.current()!.saveInBackground()
-            inviteRequestsbutton.badgeString = PFUser.current()!["gameInvite"] as! Int
+            accepted = 0
+            inviteRequestsbutton.badgeString = self.gameInvite
         }
-        self.forceFetchData()
     }
     
     override func fetchData() {
@@ -135,7 +173,7 @@ class  RequestTable: ParseTable, MGSwipeTableCellDelegate {
         imageView.frame = (UIScreen.main.bounds.width <= 320) ? CGRect(x: self.view.bounds.midX - ((viewBounds.width * 0.6) / 2), y: viewBounds.height / 8 , width: viewBounds.width * 0.6 , height: viewBounds.width * 0.6) : CGRect(x: self.view.bounds.midX - ((viewBounds.width * 0.8) / 2), y: viewBounds.height / 8 , width: viewBounds.width * 0.8 , height: viewBounds.width * 0.8)
         imageView.contentMode = .scaleAspectFit
         let label = UILabel(frame: CGRect(x: 20, y: imageView.frame.maxY, width: viewBounds.width - 40, height: 50))
-        label.attributedText = evapTitle.text == "Game Invites" ? NSAttributedString(string: "No Game Requests", attributes: [NSForegroundColorAttributeName : UIColor.white, NSFontAttributeName : UIFont(name: "AmericanTypewriter-Bold", size: 20)!]) : NSAttributedString(string: "No Game Invites", attributes: [NSForegroundColorAttributeName : UIColor.white, NSFontAttributeName : UIFont(name: "AmericanTypewriter-Bold", size: 20)!])
+        label.attributedText = !requestsList ? NSAttributedString(string: "No Game Requests", attributes: [NSForegroundColorAttributeName : UIColor.white, NSFontAttributeName : UIFont(name: "AmericanTypewriter-Bold", size: 20)!]) : NSAttributedString(string: "No Game Invites", attributes: [NSForegroundColorAttributeName : UIColor.white, NSFontAttributeName : UIFont(name: "AmericanTypewriter-Bold", size: 20)!])
         label.textAlignment = .center
         let label2 = UILabel(frame: CGRect(x: 20, y: label.frame.maxY, width: viewBounds.width - 40, height: 80))
         label2.attributedText = NSAttributedString(string: "Send a Game Request to a Friend to start a new game or try out our Quick Match mode and play against a random opponent", attributes: AppConfiguration.smallTextAttributes)

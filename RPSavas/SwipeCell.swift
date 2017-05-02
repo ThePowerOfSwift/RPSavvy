@@ -168,35 +168,12 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
                 AppConfiguration.activeSession!["callerTitle"] = "\(PFUser.current()!.Fullname()) joined your game"
                 AppConfiguration.activeSession!["Accepted"] = true
                 AppConfiguration.activeSession!.saveInBackground(block: {success, error in
+                    activityIndicatorView.stopAnimation()
                     if error == nil && success == true {
-                        if self.PushUser!.objectId! != (self.UserRequest!["receiver"] as! PFUser).objectId! {
-                            let push = PFPush()
-                            let data = [
-                                "alert" : "\(PFUser.current()!.Fullname()) joined your game",
-                                "badge" : "Increment",
-                                "ObjID" : (PFUser.current()?.objectId!)! as String,
-                                "gameID" : self.UserRequest!.objectId!,
-                                "type" : "accepted"]
-                            let installQuery = PFInstallation.query()
-                            installQuery?.whereKey("User", equalTo: self.PushUser!)
-                            push.setQuery(installQuery as? PFQuery<PFInstallation>)
-                            push.setData(data)
-                            push.sendInBackground(block: { success, error in
-                                if error != nil && success == false {
-                                    ProgressHUD.showError("Error sending opponent notification")
-                                } else {
-                                    sideMenuNavigationController!.NavPush("FriendGame") { _ in
-                                        
-                                    }
-                                }
-                            })
-                        }else {
-                            sideMenuNavigationController!.NavPush("FriendGame") { _ in
-                                
-                            }
+                        sideMenuNavigationController!.NavPush("FriendGame") { _ in
+                        
                         }
                     }
-                    activityIndicatorView.stopAnimation()
                 })
             }
             return true
@@ -320,6 +297,9 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
     func setupUserRequest(_ viewController: ParseTable) {
         self.PushUser = ((self.UserRequest!["receiver"] as! PFUser).objectId! != PFUser.current()!.objectId!) ? self.UserRequest!["receiver"] as! PFUser : self.UserRequest!["caller"] as! PFUser
         self.setupAnimation(viewController)
+        self.setupDelete()
+        self.setupAccept()
+        self.rightButtons = [self.accept!, self.delete!]
         PFUser.query()?.getObjectInBackground(withId: self.PushUser!.objectId!, block: { (user, error) in
             if error == nil {
                 self.ProfileImage.tintColor = AppConfiguration.navText
@@ -339,7 +319,10 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
                 }
             }
         })
-        if self.UserRequest!["Accepted"] != nil {
+        guard let accepted = self.UserRequest!["Accepted"] as? Bool else {
+            return
+        }
+        if accepted {
             if ((self.UserRequest!["receiver"] as! PFUser).objectId! == PFUser.current()!.objectId!) {
                 self.Details!.LoadingText = "Game Request Accepted!"
             } else {
@@ -358,11 +341,11 @@ class SwipeCell: MGSwipeTableCell, MGSwipeTableCellDelegate {
          } else {
          self.Details!.LoadingText = self.UserRequest!["Accepted"] == nil ? "Your Invite Is Pending.." : "Accepted Your Game Invite!"
          }
-         */
+         
         //self.setupMessage()
         self.setupDelete()
         self.setupAccept()
-        self.rightButtons = [self.accept!, self.delete!]
+        self.rightButtons = [self.accept!, self.delete!]*/
     }
     
     func setupAnimation(_ viewController: ParseTable) {

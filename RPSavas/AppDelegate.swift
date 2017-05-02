@@ -145,45 +145,40 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
     }
     
     func handePush(_ dict: NSDictionary) {
-        let ap = (dict["aps"] as? NSDictionary)!
         let type: String = (dict["type"] as? String)!
-        let alertMessage: String = (ap["alert"] as? String)!
-        hambutton.increment()
-        PFUser.current()!.incrementKey(type)
         if type == "friendAccepted" {
+            var friends: [String] = [dict["ObjID"] as! String]
             if PFUser.current()!["Friends"] != nil {
-                var friends: [String] = PFUser.current()!["Friends"] as! [String]
+                friends = PFUser.current()!["Friends"] as! [String]
                 if !friends.contains(dict["ObjID"] as! String) {
                     friends.append(dict["ObjID"] as! String)
-                    PFUser.current()!["Friends"] = friends
-                    PFUser.current()!.saveInBackground()
-                } else {
-                    PFUser.current()!["Friends"] = friends
-                    PFUser.current()!.saveInBackground()
                 }
-            } else {
-                PFUser.current()!["Friends"] = [dict["ObjID"] as! String]
-                PFUser.current()!.saveInBackground()
             }
+            PFUser.current()!["Friends"] = friends
+            PFUser.current()!.saveInBackground()
         }
+        PFUser.current()!.incrementKey(type)
         guard let vc = sideMenuNavigationController!.topViewController else {
             return
         }
-        if vc is RequestTable {
+        if !vc.isKind(of: GameViewController.self) {
+            hambutton.increment()
+        }
+        if vc is RequestTable && (type == "gameInvite" || type == "accepted") {
             let vc = vc as! RequestTable
             vc.forceFetchData()
-        } else if vc is InviteTable {
+        } else if vc is InviteTable && type == "friendInvite" {
             let vc = vc as! InviteTable
             vc.forceFetchData()
-        } else if vc is FriendsTable {
+        } else if vc is FriendsTable && type == "friendAccepted" {
             let vc = vc as! FriendsTable
             if vc.searching == false {
                 vc.forceFetchData()
             } else {
-                self.pushHandling(vc, alertMessage: alertMessage, type: type, dict: dict)
+                self.pushHandling(vc, type: type, dict: dict)
             }
         } else {
-            self.pushHandling(vc, alertMessage: alertMessage, type: type, dict: dict)
+            self.pushHandling(vc, type: type, dict: dict)
         }
     }
     
@@ -194,7 +189,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
         static let loaderTitleOffset: CGFloat = 5
     }
     
-    func pushHandling(_ vc: UIViewController, alertMessage: String, type: String, dict: NSDictionary) {
+    func pushHandling(_ vc: UIViewController, type: String, dict: NSDictionary) {
+        let ap = (dict["aps"] as? NSDictionary)!
+        let alertMessage: String = (ap["alert"] as? String)!
         let titleLabel = CGRect(x: (UIScreen.main.bounds.width - UIScreen.main.bounds.width - 60) / 2 + 20, y: 0, width: UIScreen.main.bounds.width - 60, height: UIScreen.main.bounds.height)
         let imageBounds = CGRect(x: titleLabel.origin.x - Dimensions.imageSize - Dimensions.loaderTitleOffset, y: (Dimensions.height - Dimensions.imageSize) / 2, width: Dimensions.imageSize, height: Dimensions.imageSize)
         PFUser.query()?.getObjectInBackground(withId: dict["ObjID"] as! String, block: { user, error in
@@ -215,35 +212,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
                                         AppConfiguration.activeSession!["callerTitle"] = "\(PFUser.current()!.Fullname()) joined your game"
                                         AppConfiguration.activeSession!["Accepted"] = true
                                         AppConfiguration.activeSession!.saveInBackground(block: {success, error in
+                                            activityIndicatorView.stopAnimation()
                                             if error == nil && success == true {
-                                                if thisUser.objectId! != (object!["receiver"] as! PFUser).objectId! {
-                                                    let push = PFPush()
-                                                    let data = [
-                                                        "alert" : "\(PFUser.current()!.Fullname()) joined your game",
-                                                        "badge" : "Increment",
-                                                        "ObjID" : (PFUser.current()?.objectId!)! as String,
-                                                        "gameID" : object!.objectId!,
-                                                        "type" : "accepted"]
-                                                    let installQuery = PFInstallation.query()
-                                                    installQuery?.whereKey("User", equalTo: thisUser)
-                                                    push.setQuery(installQuery as? PFQuery<PFInstallation>)
-                                                    push.setData(data)
-                                                    push.sendInBackground(block: { success, error in
-                                                        if error != nil && success == false {
-                                                            ProgressHUD.showError("Error sending opponent notification")
-                                                        } else {
-                                                            sideMenuNavigationController!.NavPush("FriendGame") { _ in
-                                                                
-                                                            }
-                                                        }
-                                                    })
-                                                } else {
-                                                    sideMenuNavigationController!.NavPush("FriendGame") { _ in
-                                                        
-                                                    }
+                                                sideMenuNavigationController!.NavPush("FriendGame") { _ in
+                                                    
                                                 }
                                             }
-                                            activityIndicatorView.stopAnimation()
                                         })
                                     }
                                 })
@@ -268,11 +242,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate{
     //MARK: - Push Handling
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        guard let dict: NSDictionary = userInfo as NSDictionary? else {
-            completionHandler(.newData)
-            return 
-        }
-        handePush(dict)
+        handePush(userInfo as NSDictionary)
         completionHandler(.newData)
     }
     

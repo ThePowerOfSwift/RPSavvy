@@ -438,11 +438,10 @@ class SideMenuVC: UIViewController,KSideMenuVCDelegate, UITableViewDelegate, UIT
     }
     
     func sidemenuDidStartOpen(_ sidemenu: KSideMenuVC) {
-        if gameControls {
-            (tableView.cellForRow(at: IndexPath(row: 1, section: 0)) as! SideMenuCell).badgeString = 0
-            (tableView.cellForRow(at: IndexPath(row: 3, section: 0)) as! SideMenuCell).badgeString = 0
-            (tableView.cellForRow(at: IndexPath(row: 2, section: 0)) as! SideMenuCell).badgeString = 0
-        }
+        /*if gameControls {}*/
+        (tableView.cellForRow(at: IndexPath(row: 1, section: 0)) as! SideMenuCell).badgeString = 0
+        (tableView.cellForRow(at: IndexPath(row: 3, section: 0)) as! SideMenuCell).badgeString = 0
+        (tableView.cellForRow(at: IndexPath(row: 2, section: 0)) as! SideMenuCell).badgeString = 0
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -502,16 +501,10 @@ class SideMenuVC: UIViewController,KSideMenuVCDelegate, UITableViewDelegate, UIT
                     vc in
                     (vc as! FriendsTable).forceFetchData()
                 }
-                PFUser.current()!["friendAccepted"] = 0
-                PFUser.current()!.saveInBackground()
             } else if indexPath.row == 2 {
                 self.NavPush("RequestTable",completion: nil)
-                PFUser.current()!["gameInvite"] = 0
-                PFUser.current()!.saveInBackground()
             } else if indexPath.row == 3 {
                 self.NavPush("InviteTable",completion: nil)
-                PFUser.current()!["friendInvite"] = 0
-                PFUser.current()!.saveInBackground()
             } else if indexPath.row == 4 {
                 self.NavPush("Practice",completion: nil)
             } else if indexPath.row == 5 {

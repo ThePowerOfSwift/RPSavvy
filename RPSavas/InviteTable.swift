@@ -102,14 +102,6 @@ class  InviteTable: ParseTable, MGSwipeTableCellDelegate {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        let localNotification:UILocalNotification = UILocalNotification()
-        localNotification.alertAction = "Testing inline reply notificaions on iOS9"
-        localNotification.alertBody = "Woww it works!!"
-        localNotification.alertLaunchImage = "star"
-        localNotification.fireDate = Date(timeIntervalSinceNow: 5)
-        localNotification.category = "CHAT_CATEGORY"
-        UIApplication.shared.scheduleLocalNotification(localNotification)
-        
         PFUser.current()!["friendInvite"] = 0
         PFUser.current()!.saveInBackground()
         self.forceFetchData()
